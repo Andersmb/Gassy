@@ -127,9 +127,11 @@ class AddNew(tk.Frame):
         if not VOL or not PRICE or not DATE or not TIME:
             tk.messagebox.showerror("Feilmelding", "Du har oppgitt verdiar i feil format.")
             return
+        elif not tk.messagebox.askyesno("Åtvaring", "Er du sikker på at du vil leggje til ny fylling?"):
+            return
 
         data = {}
-        data["bonus"] = False if self.bonus.get() == "Ingen bonus" else self.bonus.get()
+        data["bonus"] = "False" if self.bonus.get() == "Ingen bonus" else self.bonus.get()
         data["station"] = self.station.get()
         data["volume"] = float(self.entry_volume.get())
         data["price"] = float(self.entry_price.get())
