@@ -19,9 +19,18 @@ class Gassy(tk.Tk):
     """
     def __init__(self, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
+        self.columnconfigure(0, weight=1)
         self.startup = True
         self.datafile = "/Users/Anders/Documents/github/Gassy/data.json"
         self.backupfile = "/Users/Anders/Documents/github/Gassy/.data_backup.json"
+
+        self.stations = ["Circle K", "Shell", "Best", "Uno-X", "Esso"]
+        self.bonuses = ["Trumf", "Coop", "Ingen bonus"]
+
+        self.bonus = tk.StringVar()
+        self.bonus.set(self.bonuses[0])
+        self.station = tk.StringVar()
+        self.station.set(self.stations[0])
 
         try:
             with open(self.datafile) as f:
@@ -30,30 +39,39 @@ class Gassy(tk.Tk):
             tk.messagebox.showwarning("Åtvaring", "Fyllingsdata ikkje funne!")
 
         self.mainwindow = MainWindow(self)
-        self.show_main()
+        self.show_main(self)
         self.startup = False
 
-    def show_main(self):
+    def show_main(self, windowtoforget):
         self.mainwindow.grid(row=0, column=0)
         if not self.startup:
-            self.addnew.grid_forget()
+            windowtoforget.grid_forget()
 
     def show_addnew(self):
         self.addnew = AddNew(self)
         self.mainwindow.grid_forget()
         self.addnew.grid(row=0, column=0)
 
+    def show_editfills(self):
+        self.editfills = EditFills(self)
+        self.mainwindow.grid_forget()
+        self.editfills.grid(row=0, column=0)
+
 
 class MainWindow(tk.Frame):
     def __init__(self, parent):
         tk.Frame.__init__(self)
         self.parent = parent
+        self.grid(row=0, column=0, sticky=tk.NSEW)
+        #self.rowconfigure(0, weight=1)
+        self.columnconfigure(0, weight=1)
 
         label_title = tk.Label(self, text="Welcome to Gassy!", bg="orange")
-        label_title.pack()
+        label_title.grid(row=0, column=0, sticky=tk.EW)
 
-        tk.Button(self, text="Ny fylling...", command=self.register_new_fill).pack()
-        tk.Button(self, text="Lukk", command=self.parent.destroy).pack()
+        tk.Button(self, text="Ny fylling...", command=self.register_new_fill).grid(row=1, column=0, sticky=tk.EW)
+        tk.Button(self, text="Rediger fyllingar...", command=self.edit_fills).grid(row=2, column=0, sticky=tk.EW)
+        tk.Button(self, text="Lukk", command=self.parent.destroy, fg="red").grid(row=3, column=0, sticky=tk.EW)
 
     def plot_price(self):
         x = []
@@ -74,24 +92,108 @@ class MainWindow(tk.Frame):
     def register_new_fill(self):
         self.parent.show_addnew()
 
+    def edit_fills(self):
+        self.parent.show_editfills()
+
+class EditFills(tk.Frame):
+    def __init__(self, parent):
+        tk.Frame.__init__(self)
+        self.parent = parent
+
+        self.grid(row=0, column=0, sticky=tk.NSEW)
+        self.rowconfigure(0, weight=1)
+        self.rowconfigure(1, weight=1)
+
+        self.frame_left = tk.Frame(self)
+        self.frame_right = tk.Frame(self)
+        self.frame_left.grid(row=0, column=0, sticky=tk.NSEW)
+        self.frame_right.grid(row=0, column=1, sticky=tk.NSEW)
+
+        tk.Label(self.frame_left, text="Fyllingar").grid(row=0, column=0, sticky=tk.EW)
+        tk.Label(self.frame_right, text="Fyllingsdata").grid(row=0, column=0, sticky=tk.EW)
+
+        # tk Entries for showing data
+        self.entry_volume = tk.Entry(self.frame_right)
+        self.entry_price = tk.Entry(self.frame_right)
+        self.entry_date = tk.Entry(self.frame_right)
+        self.entry_time = tk.Entry(self.frame_right)
+        option_bonus = tk.OptionMenu(self.frame_right, self.parent.bonus, *self.parent.bonuses)
+        option_station = tk.OptionMenu(self.frame_right, self.parent.station, *self.parent.stations)
+        self.label_volume = tk.Label(self.frame_right, text="Volum: ")
+        self.label_price = tk.Label(self.frame_right, text="Literpris: ")
+        self.label_date = tk.Label(self.frame_right, text="Dato: ")
+        self.label_time = tk.Label(self.frame_right, text="Klokkeslett: ")
+        label_bonus = tk.Label(self.frame_right, text="Bonusprogram: ")
+        label_station = tk.Label(self.frame_right, text="Stasjon: ")
+
+        self.label_volume.grid(row=1, column=0, sticky=tk.E)
+        self.label_price.grid(row=2, column=0, sticky=tk.E)
+        self.label_date.grid(row=3, column=0, sticky=tk.E)
+        self.label_time.grid(row=4, column=0, sticky=tk.E)
+        label_bonus.grid(row=5, column=0, sticky=tk.E)
+        label_station.grid(row=6, column=0, sticky=tk.E)
+        self.entry_volume.grid(row=1, column=1, sticky=tk.W)
+        self.entry_price.grid(row=2, column=1, sticky=tk.W)
+        self.entry_date.grid(row=3, column=1, sticky=tk.W)
+        self.entry_time.grid(row=4, column=1, sticky=tk.W)
+        option_bonus.grid(row=5, column=1, sticky=tk.W)
+        option_station.grid(row=6, column=1, sticky=tk.W)
+
+        global fills
+        fills = [fill["date"] for fill in self.parent.data]
+        fills = map(lambda x: x.split("."), fills)
+
+        fills = [datetime.date(*list(reversed(list(map(int, date))))) for date in fills]
+
+        ROW = 1
+        for i, fill in enumerate(sorted(fills)):
+            label = tk.Label(self.frame_left, text=fill)
+            label.grid(row=ROW, column=0)
+            label.bind("<Button-1>", lambda event, date=fill, index=i: self.show_fill_data(event, date, index))
+
+            ROW += 1
+
+    def show_fill_data(self, event, date, index):
+        # First update all labels such that the one clicked is green
+        ROW = 1
+        for i, fill in enumerate(sorted(fills)):
+            if i == index:
+                label = tk.Label(self.frame_left, text=fill, bg="lightgreen")
+            else:
+                label = tk.Label(self.frame_left, text=fill)
+            label.grid(row=ROW, column=0)
+            label.bind("<Button-1>", lambda event, date=fill, i=i: self.show_fill_data(event, date, i))
+
+            ROW += 1
+
+
+            # Then display the fill data
+            self.entry_volume.delete(0, tk.END)
+            self.entry_volume.insert(0, date)
+
+    def get_fill_from_date(self):
+        """
+        Fetch the fill data dict from fill data by matching with a date.
+        Only works if all dates are unique, but this is a reasonable assumption.
+        :return:
+        """
+        pass
 
 class AddNew(tk.Frame):
     def __init__(self, parent):
         tk.Frame.__init__(self)
+        self.grid(row=0, column=0, sticky=tk.NSEW)
+        self.columnconfigure(0, weight=1)
+
         self.parent = parent
-        self.bonus = tk.StringVar()
-        self.bonus.set("Coop")
-        self.station = tk.StringVar()
-        self.station.set("Circle K")
-        stations = ["Circle K", "Shell", "Best", "Uno-X", "Esso"]
 
         tk.Label(self, text="Legg til ny fylling").grid(row=0, column=0)
         self.entry_volume = tk.Entry(self)
         self.entry_price = tk.Entry(self)
         self.entry_date = tk.Entry(self)
         self.entry_time = tk.Entry(self)
-        option_bonus = tk.OptionMenu(self, self.bonus, *["Coop", "Trumf", "Ingen bonus"])
-        option_station = tk.OptionMenu(self, self.station, *stations)
+        option_bonus = tk.OptionMenu(self, self.parent.bonus, *self.parent.bonuses)
+        option_station = tk.OptionMenu(self, self.parent.station, *self.parent.stations)
         self.label_volume = tk.Label(self, text="Volum: ")
         self.label_price = tk.Label(self, text="Literpris: ")
         self.label_date = tk.Label(self, text="Dato: ")
@@ -113,7 +215,7 @@ class AddNew(tk.Frame):
         option_station.grid(row=6, column=1, sticky=tk.W)
 
         tk.Button(self, text="Lagre", command=self.append_new_fill).grid(row=7, column=0)
-        tk.Button(self, text="Avbryt", command=self.parent.show_main).grid(row=8, column=0)
+        tk.Button(self, text="Avbryt", command=lambda: self.parent.show_main(self)).grid(row=8, column=0)
         tk.Button(self, text="Lukk", command=self.parent.destroy).grid(row=9, column=0)
 
         self.sanity_check()
@@ -245,4 +347,5 @@ class AddNew(tk.Frame):
 
 
 app = Gassy()
+app.resizable(False, False)
 app.mainloop()
