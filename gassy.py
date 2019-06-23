@@ -66,7 +66,7 @@ class MainWindow(tk.Frame):
         #self.rowconfigure(0, weight=1)
         self.columnconfigure(0, weight=1)
 
-        label_title = tk.Label(self, text="Welcome to Gassy!", bg="orange")
+        label_title = tk.Label(self, text="Velkommen til Gassy!", bg="orange")
         label_title.grid(row=0, column=0, sticky=tk.EW)
 
         tk.Button(self, text="Ny fylling...", command=self.register_new_fill).grid(row=1, column=0, sticky=tk.EW)
@@ -95,10 +95,12 @@ class MainWindow(tk.Frame):
     def edit_fills(self):
         self.parent.show_editfills()
 
+
 class EditFills(tk.Frame):
     def __init__(self, parent):
         tk.Frame.__init__(self)
         self.parent = parent
+        self.selected = tk.StringVar()
 
         self.grid(row=0, column=0, sticky=tk.NSEW)
         self.rowconfigure(0, weight=1)
@@ -139,19 +141,24 @@ class EditFills(tk.Frame):
         option_bonus.grid(row=5, column=1, sticky=tk.W)
         option_station.grid(row=6, column=1, sticky=tk.W)
 
+        tk.Button(self.frame_right, text="Avbryt", command=lambda: self.parent.show_main(self)).grid(row=7, column = 1, sticky=tk.W)
+        tk.Button(self.frame_right, text="Oppdater fylling", command=self.update_fill_entry).grid(row=7, column=0)
+
         global fills
         fills = [fill["date"] for fill in self.parent.data]
-        fills = map(lambda x: x.split("."), fills)
+        fills = map(lambda x: x.split("-"), fills)
 
-        fills = [datetime.date(*list(reversed(list(map(int, date))))) for date in fills]
+        fills = [datetime.date(*list(map(int, date))) for date in fills]
 
         ROW = 1
         for i, fill in enumerate(sorted(fills)):
             label = tk.Label(self.frame_left, text=fill)
             label.grid(row=ROW, column=0)
-            label.bind("<Button-1>", lambda event, date=fill, index=i: self.show_fill_data(event, date, index))
+            label.bind("<Button-1>", lambda event, date=fill, i=i: self.show_fill_data(event, date, i))
 
             ROW += 1
+
+        self.sanity_check()
 
     def show_fill_data(self, event, date, index):
         # First update all labels such that the one clicked is green
@@ -166,26 +173,180 @@ class EditFills(tk.Frame):
 
             ROW += 1
 
+        self.selected.set(date)
+        # Then display the fill data
+        entry = self.get_fill_from_date(self.parent.data, date)
 
-            # Then display the fill data
-            self.entry_volume.delete(0, tk.END)
-            self.entry_volume.insert(0, date)
+        self.entry_volume.delete(0, tk.END)
+        self.entry_volume.insert(0, entry["volume"])
 
-    def get_fill_from_date(self):
+        self.entry_price.delete(0, tk.END)
+        self.entry_price.insert(0, entry["price"])
+
+        self.entry_date.delete(0, tk.END)
+        self.entry_date.insert(0, entry["date"])
+
+        self.entry_time.delete(0, tk.END)
+        self.entry_time.insert(0, entry["time"])
+
+        self.parent.bonus.set("Ingen bonus" if entry["bonus"] == "False" else entry["bonus"])
+        self.parent.station.set(entry["station"])
+
+    @staticmethod
+    def get_fill_from_date(data, query):
         """
         Fetch the fill data dict from fill data by matching with a date.
         Only works if all dates are unique, but this is a reasonable assumption.
+
+        :return: The fill information for the corresponding date
+        """
+        day = query.day if len(str(query.day)) > 1 else "0" + str(query.day)
+        month = query.month if len(str(query.month)) > 1 else "0" + str(query.month)
+        for entry in data:
+            if entry["date"] == f"{query.year}-{month}-{day}":
+                return entry
+
+    def update_fill_entry(self):
+        """
+        Update the fill entry if it is filled out correctly. Ask for confirmation before
+        overwriting data.
         :return:
         """
-        pass
+
+        if not VOL_EDIT or not PRICE_EDIT or not DATE_EDIT or not TIME_EDIT:
+            tk.messagebox.showerror("Feilmelding", "Du har oppgitt verdiar i feil format.")
+            return
+        elif not tk.messagebox.askyesno("Gassy", "Er du sikker på at du vil endre informasjonen for denne fyllinga?"):
+            return
+
+        # First make a dict containing the updated data
+        updated_data = {
+            "volume": self.entry_volume.get(),
+            "price": self.entry_price.get(),
+            "time": self.entry_time.get(),
+            "date": self.entry_date.get(),
+            "bonus": "False" if self.parent.bonus.get() == "Ingen bonus" else self.parent.bonus.get(),
+            "station": self.parent.station.get()
+        }
+
+        # Now collect all OTHER fill entries from the original data file
+        other_data = []
+        for entry in self.parent.data:
+            if entry["date"] != self.selected.get():
+                other_data.append(entry)
+
+        with open(self.parent.backupfile, "w") as backupdata:
+            json.dump(self.parent.data, backupdata, indent=4)
+
+        with open(self.parent.datafile, "w") as maindata:
+            other_data.append(updated_data)
+            json.dump(other_data, maindata, indent=4)
+
+        tk.messagebox.showinfo("Gassy", "Fyllingsdata oppdatert!")
+
+    def sanity_check(self):
+        """
+        Evaluate whether the information provided in Entries are valid.
+        Continuously monitor whether the criteria are fulfilled.
+        Green labels if they will be accepted, red labels if something is wrong.
+
+        Criteria are:
+        Volume: float, two decimal points
+        Price: float, two decimal points
+        Time: hh:mm
+        Date: dd.mm.yyyy
+
+        :return:
+        """
+
+        vol = self.entry_volume.get()
+        price = self.entry_price.get()
+        time = self.entry_time.get()
+        date = self.entry_date.get()
+
+        global VOL_EDIT
+        global PRICE_EDIT
+        global DATE_EDIT
+        global TIME_EDIT
+        VOL_EDIT, PRICE_EDIT, DATE_EDIT, TIME_EDIT = False, False, False, False
+
+        # Volume
+        try:
+            float(vol)
+            if len(vol.split(".")) != 2:
+                self.label_volume["fg"] = "red"
+            else:
+                main, decimal = vol.split(".")
+                if int(decimal) not in range(100):
+                    self.label_volume["fg"] = "red"
+                elif len(decimal) != 2:
+                    self.label_volume["fg"] = "red"
+                else:
+                    self.label_volume["fg"] = "green"
+                    VOL_EDIT = True
+
+        except ValueError:
+            self.label_volume["fg"] = "red"
+
+        # Price
+        try:
+            float(price)
+            if len(price.split(".")) != 2:
+                self.label_price["fg"] = "red"
+            else:
+                main, decimal = price.split(".")
+                if int(decimal) not in range(100):
+                    self.label_price["fg"] = "red"
+                elif len(decimal) != 2:
+                    self.label_price["fg"] = "red"
+                else:
+                    self.label_price["fg"] = "green"
+                    PRICE_EDIT = True
+
+        except ValueError:
+            self.label_price["fg"] = "red"
+
+        # Time
+        if len(time.split(":")) != 2:
+            self.label_time["fg"] = "red"
+        else:
+            hh, mm = time.split(":")
+            if len(hh) != 2 or len(mm) != 2:
+                self.label_time["fg"] = "red"
+            else:
+                try:
+                    if int(hh) not in range(24) or int(mm) not in range(60):
+                        self.label_time["fg"] = "red"
+                    else:
+                        self.label_time["fg"] = "green"
+                        TIME_EDIT = True
+                except ValueError:
+                    self.label_time["fg"] = "red"
+
+        # Date
+        try:
+            year, month, day = date.split("-")
+            if int(day) not in range(1, 32) or int(month) not in range(1, 13) or int(year) > datetime.date.today().year:
+                self.label_date["fg"] = "red"
+            else:
+                if len(day) != 2 or len(month) != 2 or len(year) != 4:
+                    self.label_date["fg"] = "red"
+                else:
+                    self.label_date["fg"] = "green"
+                    DATE_EDIT = True
+
+        except ValueError:
+           self.label_date["fg"] = "red"
+
+        self.after(200, self.sanity_check)
+
 
 class AddNew(tk.Frame):
     def __init__(self, parent):
         tk.Frame.__init__(self)
-        self.grid(row=0, column=0, sticky=tk.NSEW)
-        self.columnconfigure(0, weight=1)
-
         self.parent = parent
+
+        self.grid(row=0, column=0, sticky=tk.NSEW)
 
         tk.Label(self, text="Legg til ny fylling").grid(row=0, column=0)
         self.entry_volume = tk.Entry(self)
@@ -214,9 +375,10 @@ class AddNew(tk.Frame):
         option_bonus.grid(row=5, column=1, sticky=tk.W)
         option_station.grid(row=6, column=1, sticky=tk.W)
 
-        tk.Button(self, text="Lagre", command=self.append_new_fill).grid(row=7, column=0)
-        tk.Button(self, text="Avbryt", command=lambda: self.parent.show_main(self)).grid(row=8, column=0)
-        tk.Button(self, text="Lukk", command=self.parent.destroy).grid(row=9, column=0)
+        tk.Button(self, text="Lagre", command=self.append_new_fill).grid(row=7, column=0, sticky=tk.W)
+        tk.Button(self, text="Avbryt", command=lambda: self.parent.show_main(self)).grid(row=7,
+                                                                                         column=0, sticky=tk.E)
+        #tk.Button(self, text="Lukk", command=self.parent.destroy).grid(row=9, column=0)
 
         self.sanity_check()
 
@@ -235,8 +397,8 @@ class AddNew(tk.Frame):
         data = {}
         data["bonus"] = "False" if self.bonus.get() == "Ingen bonus" else self.bonus.get()
         data["station"] = self.station.get()
-        data["volume"] = float(self.entry_volume.get())
-        data["price"] = float(self.entry_price.get())
+        data["volume"] = self.entry_volume.get()
+        data["price"] = self.entry_price.get()
         data["time"] = self.entry_time.get()
         data["date"] = self.entry_date.get()
 
@@ -330,7 +492,7 @@ class AddNew(tk.Frame):
 
         # Date
         try:
-            day, month, year = date.split(".")
+            year, month, day = date.split("-")
             if int(day) not in range(1, 32) or int(month) not in range(1, 13) or int(year) > datetime.date.today().year:
                 self.label_date["fg"] = "red"
             else:
@@ -348,4 +510,5 @@ class AddNew(tk.Frame):
 
 app = Gassy()
 app.resizable(False, False)
+app.title("Gassy")
 app.mainloop()
