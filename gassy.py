@@ -10,7 +10,6 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import numpy as np
 import json
 import datetime
-import time
 
 
 class Gassy(tk.Tk):
@@ -58,6 +57,11 @@ class Gassy(tk.Tk):
         self.mainwindow.grid_forget()
         self.editfills.grid(row=0, column=0)
 
+    def show_graphing(self):
+        self.graphing = Graphing(self)
+        self.mainwindow.grid_forget()
+        self.graphing.grid(row=0, column=0)
+
 
 class MainWindow(tk.Frame):
     def __init__(self, parent):
@@ -80,36 +84,17 @@ class MainWindow(tk.Frame):
         label_title = tk.Label(frame_right, text="Velkommen til Gassy!", bg="orange")
         label_title.grid(row=0, column=0, sticky=tk.EW, padx=20, pady=10)
 
-        button_add_new_fill = tk.Button(frame_right, text="Ny fylling...", command=self.register_new_fill)
+        button_add_new_fill = tk.Button(frame_right, text="Ny fylling...", command=self.parent.show_addnew)
         button_add_new_fill.grid(row=1, column=0, sticky=tk.EW, padx=20, pady=5)
 
-        button_edit_fills = tk.Button(frame_right, text="Rediger fyllingar...", command=self.edit_fills)
+        button_edit_fills = tk.Button(frame_right, text="Rediger fyllingar...", command=self.parent.show_editfills)
         button_edit_fills.grid(row=2, column=0, sticky=tk.EW, padx=20, pady=5)
 
+        button_graphing = tk.Button(frame_right, text="Analysar...", command=self.parent.show_graphing)
+        button_graphing.grid(row=3, column=0, sticky=tk.EW, padx=20, pady=5)
+
         button_exit = tk.Button(frame_right, text="Lukk", command=self.parent.destroy, fg="red")
-        button_exit.grid(row=3, column=0, sticky=tk.EW, padx=20, pady=5)
-
-    def plot_price(self):
-        x = []
-        y = []
-        for entry in self.parent.data:
-            x.append(entry["date"])
-            y.append(entry["price"])
-
-        fig = Figure()
-        p_price = fig.add_subplot(111)
-
-        p_price.scatter(x, y, marker="o", color="red", edgecolor="black")
-
-        canvas = FigureCanvasTkAgg(fig, self)
-        canvas.show()
-        canvas.get_tk_widget().pack()
-
-    def register_new_fill(self):
-        self.parent.show_addnew()
-
-    def edit_fills(self):
-        self.parent.show_editfills()
+        button_exit.grid(row=4, column=0, sticky=tk.EW, padx=20, pady=5)
 
 
 class EditFills(tk.Frame):
@@ -160,7 +145,7 @@ class EditFills(tk.Frame):
         for row in range(6):
             tk.Button(self.frame_right, text="Hjelp", command=lambda index=row: self.edit_help(index+1)).grid(row=row+1, column=2)
 
-        tk.Button(self.frame_right, text="Avbryt", command=lambda: self.parent.show_main(self)).grid(row=7, column = 1, sticky=tk.W)
+        tk.Button(self.frame_right, text="Attende", command=lambda: self.parent.show_main(self)).grid(row=7, column = 1, sticky=tk.W)
         tk.Button(self.frame_right, text="Oppdater fylling", command=self.update_fill_entry).grid(row=7, column=0)
 
         global fills
@@ -486,7 +471,7 @@ class AddNew(tk.Frame):
             tk.Button(self, text="Hjelp", command=lambda index=row: self.edit_help(index+1)).grid(row=row+1, column=2)
 
         tk.Button(self, text="Lagre", command=self.append_new_fill).grid(row=7, column=0, sticky=tk.W)
-        tk.Button(self, text="Avbryt", command=lambda: self.parent.show_main(self)).grid(row=7,
+        tk.Button(self, text="Attende", command=lambda: self.parent.show_main(self)).grid(row=7,
                                                                                          column=0, sticky=tk.E)
         #tk.Button(self, text="Lukk", command=self.parent.destroy).grid(row=9, column=0)
 
@@ -730,6 +715,50 @@ class InfoBox(tk.Toplevel):
         textbox.config(state=tk.DISABLED)
 
         tk.Button(frame_left, text="Den er grei!", font=self.font, command=self.destroy).grid(row=1, column=0)
+
+
+class Graphing(tk.Frame):
+    def __init__(self, parent):
+        tk.Frame.__init__(self)
+        self.parent = parent
+
+        self.grid(row=0, column=0)
+
+        label_title = tk.Label(self, text="Analyse av fyllingsdata")
+        label_title.grid(row=0, column=0)
+
+        tk.Button(self, text="Attende", command=lambda: self.parent.show_main(self)).grid(row=1, column=0, pady=5, padx=5)
+        tk.Button(self, text="Variasjon i literpris", command=self.plot_price).grid(row=2, column=0, pady=5, padx=5)
+
+    def plot_price(self):
+        container = tk.Toplevel(self)
+        container.resizable(False, False)
+
+        x = [entry["date"] for entry in self.parent.data]
+        y = [entry["price"] for entry in self.parent.data]
+
+        x_s, y_s = zip(*sorted(zip(x, y)))
+        x_s = ["\n".join(date.split("-")) for date in x_s]
+
+        mean = sum(map(float, y_s)) / len(list(map(float, y_s)))
+        x_mean = range(len(x_s))
+        y_mean = [mean for x in x_mean]
+
+        FS = 14
+        fig = Figure()
+        ax = fig.add_subplot(111)
+
+        ax.scatter(x_s, y_s, marker="o", color="red", edgecolor="black")
+        ax.plot(x_mean, y_mean, linestyle="--", color="black", label="Gjennomsnitt")
+
+        ax.set_ylabel("Literpris (Kroner/L)", fontsize=FS)
+
+        ax.grid()
+        ax.legend(fontsize=FS)
+
+        canvas = FigureCanvasTkAgg(fig, container)
+        canvas.show()
+        canvas.get_tk_widget().grid(row=1, column=0)
 
 
 app = Gassy()
