@@ -10,13 +10,11 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import numpy as np
 import json
 import datetime
+import decimal
+from decimal import Decimal
 
 
 class Gassy(tk.Tk):
-    """
-    For embedding matplotlib in tk, see here:
-    https://matplotlib.org/3.1.0/gallery/user_interfaces/embedding_in_tk_sgskip.html
-    """
     def __init__(self, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
         self.columnconfigure(0, weight=1)
@@ -31,6 +29,9 @@ class Gassy(tk.Tk):
         self.bonus.set(self.bonuses[0])
         self.station = tk.StringVar()
         self.station.set(self.stations[0])
+
+        self.font_heading = font.Font(family="Optima", size=20)
+        self.font_main = font.Font(family="Optima", size=14)
 
         try:
             with open(self.datafile) as f:
@@ -81,19 +82,23 @@ class MainWindow(tk.Frame):
         label.image = image
         label.grid(row=0, column=0, sticky=tk.E)
 
-        label_title = tk.Label(frame_right, text="Velkommen til Gassy!", bg="orange")
+        label_title = tk.Label(frame_right, text="Velkommen til Gassy!", bg="orange", font=self.parent.font_heading)
         label_title.grid(row=0, column=0, sticky=tk.EW, padx=20, pady=10)
 
-        button_add_new_fill = tk.Button(frame_right, text="Ny fylling...", command=self.parent.show_addnew)
+        button_add_new_fill = tk.Button(frame_right, text="Ny fylling...",
+                                        command=self.parent.show_addnew, font=self.parent.font_main)
         button_add_new_fill.grid(row=1, column=0, sticky=tk.EW, padx=20, pady=5)
 
-        button_edit_fills = tk.Button(frame_right, text="Rediger fyllingar...", command=self.parent.show_editfills)
+        button_edit_fills = tk.Button(frame_right, text="Rediger fyllingar...",
+                                      command=self.parent.show_editfills, font=self.parent.font_main)
         button_edit_fills.grid(row=2, column=0, sticky=tk.EW, padx=20, pady=5)
 
-        button_graphing = tk.Button(frame_right, text="Analysar...", command=self.parent.show_graphing)
+        button_graphing = tk.Button(frame_right, text="Analysar...",
+                                    command=self.parent.show_graphing, font=self.parent.font_main)
         button_graphing.grid(row=3, column=0, sticky=tk.EW, padx=20, pady=5)
 
-        button_exit = tk.Button(frame_right, text="Lukk", command=self.parent.destroy, fg="red")
+        button_exit = tk.Button(frame_right, text="Lukk",
+                                command=self.parent.destroy, fg="red", font=self.parent.font_main)
         button_exit.grid(row=4, column=0, sticky=tk.EW, padx=20, pady=5)
 
 
@@ -112,41 +117,53 @@ class EditFills(tk.Frame):
         self.frame_left.grid(row=0, column=0, sticky=tk.NSEW)
         self.frame_right.grid(row=0, column=1, sticky=tk.NSEW)
 
-        tk.Label(self.frame_left, text="Fyllingar").grid(row=0, column=0, sticky=tk.EW)
-        tk.Label(self.frame_right, text="Fyllingsdata").grid(row=0, column=0, sticky=tk.EW)
+        tk.Label(self.frame_left, text="Fyllingar",
+                 font=self.parent.font_heading).grid(row=0, column=0, sticky=tk.EW)
+        tk.Label(self.frame_right, text="Fyllingsdata",
+                 font=self.parent.font_heading).grid(row=0, column=0, columnspan=3, sticky=tk.EW)
 
         # tk Entries for showing data
-        self.entry_volume = tk.Entry(self.frame_right)
-        self.entry_price = tk.Entry(self.frame_right)
-        self.entry_date = tk.Entry(self.frame_right)
-        self.entry_time = tk.Entry(self.frame_right)
+        self.entry_volume = tk.Entry(self.frame_right, font=self.parent.font_main, width=10)
+        self.entry_price = tk.Entry(self.frame_right, font=self.parent.font_main, width=10)
+        self.entry_date = tk.Entry(self.frame_right, font=self.parent.font_main, width=10)
+        self.entry_time = tk.Entry(self.frame_right, font=self.parent.font_main, width=10)
         option_bonus = tk.OptionMenu(self.frame_right, self.parent.bonus, *self.parent.bonuses)
+        option_bonus.config(font=self.parent.font_main)
+        option_bonus["menu"].config(font=self.parent.font_main)
         option_station = tk.OptionMenu(self.frame_right, self.parent.station, *self.parent.stations)
-        self.label_volume = tk.Label(self.frame_right, text="Volum (L): ")
-        self.label_price = tk.Label(self.frame_right, text="Literpris (Kr/L): ")
-        self.label_date = tk.Label(self.frame_right, text="Dato (åååå-mm-dd): ")
-        self.label_time = tk.Label(self.frame_right, text="Klokkeslett (tt:mm): ")
-        label_bonus = tk.Label(self.frame_right, text="Bonusprogram: ")
-        label_station = tk.Label(self.frame_right, text="Stasjon: ")
+        option_station.config(font=self.parent.font_main)
+        option_station["menu"].config(font=self.parent.font_main)
+        self.label_volume = tk.Label(self.frame_right, text="Volum (L): ", font=self.parent.font_main)
+        self.label_price = tk.Label(self.frame_right, text="Literpris (Kr/L): ", font=self.parent.font_main)
+        self.label_date = tk.Label(self.frame_right, text="Dato (åååå-mm-dd): ", font=self.parent.font_main)
+        self.label_time = tk.Label(self.frame_right, text="Klokkeslett (tt:mm): ", font=self.parent.font_main)
+        label_bonus = tk.Label(self.frame_right, text="Bonusprogram: ", font=self.parent.font_main)
+        label_station = tk.Label(self.frame_right, text="Stasjon: ", font=self.parent.font_main)
 
-        self.label_volume.grid(row=1, column=0, sticky=tk.E)
-        self.label_price.grid(row=2, column=0, sticky=tk.E)
-        self.label_date.grid(row=3, column=0, sticky=tk.E)
-        self.label_time.grid(row=4, column=0, sticky=tk.E)
-        label_bonus.grid(row=5, column=0, sticky=tk.E)
-        label_station.grid(row=6, column=0, sticky=tk.E)
-        self.entry_volume.grid(row=1, column=1, sticky=tk.W)
-        self.entry_price.grid(row=2, column=1, sticky=tk.W)
-        self.entry_date.grid(row=3, column=1, sticky=tk.W)
-        self.entry_time.grid(row=4, column=1, sticky=tk.W)
-        option_bonus.grid(row=5, column=1, sticky=tk.W)
-        option_station.grid(row=6, column=1, sticky=tk.W)
+        self.label_volume.grid(row=1, column=0, sticky=tk.E, pady=5, padx=5)
+        self.label_price.grid(row=2, column=0, sticky=tk.E, pady=5, padx=5)
+        self.label_date.grid(row=3, column=0, sticky=tk.E, pady=5, padx=5)
+        self.label_time.grid(row=4, column=0, sticky=tk.E, pady=5, padx=5)
+        label_bonus.grid(row=5, column=0, sticky=tk.E, pady=5, padx=5)
+        label_station.grid(row=6, column=0, sticky=tk.E, pady=5, padx=5)
+        self.entry_volume.grid(row=1, column=1, sticky=tk.W, pady=5, padx=5)
+        self.entry_price.grid(row=2, column=1, sticky=tk.W, pady=5, padx=5)
+        self.entry_date.grid(row=3, column=1, sticky=tk.W, pady=5, padx=5)
+        self.entry_time.grid(row=4, column=1, sticky=tk.W, pady=5, padx=5)
+        option_bonus.grid(row=5, column=1, sticky=tk.W, pady=5, padx=5)
+        option_station.grid(row=6, column=1, sticky=tk.W, pady=5, padx=5)
 
         for row in range(6):
-            tk.Button(self.frame_right, text="Hjelp", command=lambda index=row: self.edit_help(index+1)).grid(row=row+1, column=2)
+            tk.Button(self.frame_right, text="Hjelp",
+                      command=lambda index=row: self.edit_help(index+1),
+                      font=self.parent.font_main).grid(row=row+1, column=2, pady=5, padx=5)
 
-        tk.Button(self.frame_right, text="Attende", command=lambda: self.parent.show_main(self)).grid(row=7, column = 1, sticky=tk.W)
-        tk.Button(self.frame_right, text="Oppdater fylling", command=self.update_fill_entry).grid(row=7, column=0)
+        tk.Button(self.frame_right, text="Attende",
+                  command=lambda: self.parent.show_main(self),
+                  font=self.parent.font_main).grid(row=7, column = 1, sticky=tk.W, pady=5, padx=5)
+        tk.Button(self.frame_right, text="Oppdater fylling",
+                  command=self.update_fill_entry,
+                  font=self.parent.font_main).grid(row=7, column=0, pady=5, padx=5)
 
         global fills
         fills = [fill["date"] for fill in self.parent.data]
@@ -156,7 +173,7 @@ class EditFills(tk.Frame):
 
         ROW = 1
         for i, fill in enumerate(sorted(fills)):
-            label = tk.Label(self.frame_left, text=fill)
+            label = tk.Label(self.frame_left, text=fill, font=self.parent.font_main, height=1)
             label.grid(row=ROW, column=0)
             label.bind("<Button-1>", lambda event, date=fill, i=i: self.show_fill_data(event, date, i))
 
@@ -165,6 +182,11 @@ class EditFills(tk.Frame):
         self.sanity_check()
 
     def edit_help(self, index):
+        """
+        Display help messages for adding or editing fill data.
+        :param index: the index of the tk.Button that is put into the EditFills window.
+        :return: InfoBox instance
+        """
         if index == 1:
             msg = """
             Her oppgir du antal liter du fylte.
@@ -253,13 +275,24 @@ class EditFills(tk.Frame):
 
 
     def show_fill_data(self, event, date, index):
+        """
+        Update all date labels, and color the one clicked to green.
+
+        First re-grid all labels. The one that was clicked will become green.
+        Then get the fill data based on the date clicked, and insert this into the
+        widgets.
+        :param event: bind event from clicking on a label
+        :param date: date that is clicked
+        :param index: index of placement for date labels
+        :return: None
+        """
         # First update all labels such that the one clicked is green
         ROW = 1
         for i, fill in enumerate(sorted(fills)):
             if i == index:
-                label = tk.Label(self.frame_left, text=fill, bg="lightgreen")
+                label = tk.Label(self.frame_left, text=fill, bg="lightgreen", font=self.parent.font_main, height=1)
             else:
-                label = tk.Label(self.frame_left, text=fill)
+                label = tk.Label(self.frame_left, text=fill, font=self.parent.font_main, height=1)
             label.grid(row=ROW, column=0)
             label.bind("<Button-1>", lambda event, date=fill, i=i: self.show_fill_data(event, date, i))
 
@@ -302,7 +335,7 @@ class EditFills(tk.Frame):
         """
         Update the fill entry if it is filled out correctly. Ask for confirmation before
         overwriting data.
-        :return:
+        :return: None
         """
 
         if not VOL_EDIT or not PRICE_EDIT or not DATE_EDIT or not TIME_EDIT:
@@ -346,7 +379,7 @@ class EditFills(tk.Frame):
         Volume: float, two decimal points
         Price: float, two decimal points
         Time: hh:mm
-        Date: dd.mm.yyyy
+        Date: yyyy-mm-dd
 
         :return:
         """
@@ -441,18 +474,22 @@ class AddNew(tk.Frame):
         self.grid(row=0, column=0, sticky=tk.NSEW)
 
         tk.Label(self, text="Legg til ny fylling").grid(row=0, column=0)
-        self.entry_volume = tk.Entry(self)
-        self.entry_price = tk.Entry(self)
-        self.entry_date = tk.Entry(self)
-        self.entry_time = tk.Entry(self)
+        self.entry_volume = tk.Entry(self, font=self.parent.font_main)
+        self.entry_price = tk.Entry(self, font=self.parent.font_main)
+        self.entry_date = tk.Entry(self, font=self.parent.font_main)
+        self.entry_time = tk.Entry(self, font=self.parent.font_main)
         option_bonus = tk.OptionMenu(self, self.parent.bonus, *self.parent.bonuses)
+        option_bonus.config(font=self.parent.font_main)
+        option_bonus["menu"].config(font=self.parent.font_main)
         option_station = tk.OptionMenu(self, self.parent.station, *self.parent.stations)
-        self.label_volume = tk.Label(self, text="Volum: ")
-        self.label_price = tk.Label(self, text="Literpris: ")
-        self.label_date = tk.Label(self, text="Dato: ")
-        self.label_time = tk.Label(self, text="Klokkeslett: ")
-        label_bonus = tk.Label(self, text="Bonusprogram: ")
-        label_station = tk.Label(self, text="Stasjon: ")
+        option_station.config(font=self.parent.font_main)
+        option_station["menu"].config(font=self.parent.font_main)
+        self.label_volume = tk.Label(self, text="Volum: ", font=self.parent.font_main)
+        self.label_price = tk.Label(self, text="Literpris: ", font=self.parent.font_main)
+        self.label_date = tk.Label(self, text="Dato: ", font=self.parent.font_main)
+        self.label_time = tk.Label(self, text="Klokkeslett: ", font=self.parent.font_main)
+        label_bonus = tk.Label(self, text="Bonusprogram: ", font=self.parent.font_main)
+        label_station = tk.Label(self, text="Stasjon: ", font=self.parent.font_main)
 
         self.label_volume.grid(row=1, column=0, sticky=tk.E)
         self.label_price.grid(row=2, column=0, sticky=tk.E)
@@ -468,12 +505,13 @@ class AddNew(tk.Frame):
         option_station.grid(row=6, column=1, sticky=tk.W)
 
         for row in range(6):
-            tk.Button(self, text="Hjelp", command=lambda index=row: self.edit_help(index+1)).grid(row=row+1, column=2)
+            tk.Button(self, text="Hjelp", command=lambda index=row: self.edit_help(index+1),
+                      font=self.parent.font_main).grid(row=row+1, column=2)
 
-        tk.Button(self, text="Lagre", command=self.append_new_fill).grid(row=7, column=0, sticky=tk.W)
-        tk.Button(self, text="Attende", command=lambda: self.parent.show_main(self)).grid(row=7,
-                                                                                         column=0, sticky=tk.E)
-        #tk.Button(self, text="Lukk", command=self.parent.destroy).grid(row=9, column=0)
+        tk.Button(self, text="Lagre", command=self.append_new_fill,
+                  font=self.parent.font_main).grid(row=7, column=0, sticky=tk.W)
+        tk.Button(self, text="Attende", command=lambda: self.parent.show_main(self),
+                  font=self.parent.font_main).grid(row=7, column=0, sticky=tk.E)
 
         self.sanity_check()
 
@@ -481,7 +519,7 @@ class AddNew(tk.Frame):
         """
         Update the data file by appending the newly filled in information, if the information
         is in the correct format. If not, then show error message.
-        :return:
+        :return: None
         """
         if not VOL or not PRICE or not DATE or not TIME:
             tk.messagebox.showerror("Feilmelding", "Du har oppgitt verdiar i feil format.")
@@ -516,7 +554,7 @@ class AddNew(tk.Frame):
         Volume: float, two decimal points
         Price: float, two decimal points
         Time: hh:mm
-        Date: dd.mm.yyyy
+        Date: yyyy-mm-dd
 
         :return:
         """
@@ -603,6 +641,11 @@ class AddNew(tk.Frame):
         self.after(200, self.sanity_check)
 
     def edit_help(self, index):
+        """
+        Display help messages for adding or editing fill data.
+        :param index: the index of the tk.Button that is put into the EditFills window.
+        :return: InfoBox instance
+        """
         if index == 1:
             msg = """
             Her oppgir du antal liter du fylte.
@@ -692,13 +735,20 @@ class AddNew(tk.Frame):
 
 class InfoBox(tk.Toplevel):
     def __init__(self, parent, msg, image):
+        """
+        Custom pop-up window for displaying information, similar to tk.messagebox.showinfo,
+        used for displaying help messages.
+
+        :param parent: parent widget
+        :param msg: string containing the info message to be shown in the InfoBox
+        :param image: PhotoImage object used to decorate left side of InfoBox
+        """
         tk.Toplevel.__init__(self, parent)
         self.parent = parent
         self.msg = msg
         self.image = image
 
         self.title = "Gassy"
-        self.font = font.Font(family="Optima", size=20)
 
         frame_left = tk.Frame(self)
         frame_right = tk.Frame(self)
@@ -709,28 +759,64 @@ class InfoBox(tk.Toplevel):
         label_image.grid(row=0, column=0, sticky=tk.N)
         label_image.image = self.image
 
-        textbox = tk.Text(frame_right, font=self.font, width=40, height=12)
+        textbox = tk.Text(frame_right, font=self.parent.parent.font_heading, width=40, height=12)
         textbox.grid(row=0, column=0, sticky=tk.NSEW)
         textbox.insert(tk.END, self.msg)
         textbox.config(state=tk.DISABLED)
 
-        tk.Button(frame_left, text="Den er grei!", font=self.font, command=self.destroy).grid(row=1, column=0)
+        tk.Button(frame_left, text="Den er grei!", font=self.parent.parent.font_heading,
+                  command=self.destroy).grid(row=1, column=0)
 
 
 class Graphing(tk.Frame):
     def __init__(self, parent):
+        """
+        Window for performing plotting analyses of fill data.
+
+        For embedding matplotlib in tk, see here:
+        https://matplotlib.org/3.1.0/gallery/user_interfaces/embedding_in_tk_sgskip.html
+
+        :param parent: parent widget
+        """
         tk.Frame.__init__(self)
         self.parent = parent
 
         self.grid(row=0, column=0)
 
-        label_title = tk.Label(self, text="Analyse av fyllingsdata")
-        label_title.grid(row=0, column=0)
+        frame_left = tk.Frame(self)
+        frame_right = tk.Frame(self)
+        frame_left.grid(row=0, column=0)
+        frame_right.grid(row=0, column=1)
 
-        tk.Button(self, text="Attende", command=lambda: self.parent.show_main(self)).grid(row=1, column=0, pady=5, padx=5)
-        tk.Button(self, text="Variasjon i literpris", command=self.plot_price).grid(row=2, column=0, pady=5, padx=5)
+        image = ImageTk.PhotoImage(Image.open("graphing.jpg"))
+        label_image = tk.Label(frame_left, image=image)
+        label_image.image = image
+        label_image.grid(row=0, column=0)
+
+        label_title = tk.Label(frame_right, text="Analyse av fyllingsdata", font=self.parent.font_heading)
+        label_title.grid(row=0, column=0, sticky=tk.N)
+
+        tk.Button(frame_right, text="Attende",
+                  command=lambda: self.parent.show_main(self),
+                  font=self.parent.font_main).grid(row=1, column=0, pady=5, padx=5, sticky=tk.W)
+        tk.Button(frame_right, text="Korleis har literprisen variert?",
+                  command=self.plot_price,
+                  font=self.parent.font_main).grid(row=2, column=0, pady=5, padx=5, sticky=tk.W)
+        tk.Button(frame_right, text="Kvar har eg fylt drivstoff oftast?",
+                  command=self.plot_station_frequency,
+                  font=self.parent.font_main).grid(row=3, column=0, pady=5, padx=5, sticky=tk.W)
+        tk.Button(frame_right, text="På kva dag fyller eg oftast?",
+                  command=self.plot_day_frequency,
+                  font=self.parent.font_main).grid(row=4, column=0, pady=5, padx=5, sticky=tk.W)
+        tk.Button(frame_right, text="Samandrag",
+                  command=self.fill_report,
+                  font=self.parent.font_main).grid(row=5, column=0, pady=5, padx=5, sticky=tk.W)
 
     def plot_price(self):
+        """
+        Make scatter plot of the price vs date. Also add dashed line indicating the average price.
+        :return: None
+        """
         container = tk.Toplevel(self)
         container.resizable(False, False)
 
@@ -758,7 +844,111 @@ class Graphing(tk.Frame):
 
         canvas = FigureCanvasTkAgg(fig, container)
         canvas.show()
-        canvas.get_tk_widget().grid(row=1, column=0)
+        canvas.get_tk_widget().grid(row=0, column=0)
+
+    def plot_station_frequency(self):
+        """
+        Make a pie chart showing the frequency of fills for each station.
+        :return: None
+        """
+        counts = {station: 0 for station in set([entry["station"] for entry in self.parent.data])}
+        for entry in self.parent.data:
+            counts[entry["station"]] += 1
+
+        container = tk.Toplevel(self)
+        container.resizable(False, False)
+
+        fig = Figure()
+        ax = fig.add_subplot(111)
+        explosions = [0.05 for i in counts.keys()]
+
+        ax.pie(counts.values(),
+               explode=explosions,
+               labels=counts.keys(),
+               shadow=True,
+               startangle=90,
+               autopct='%1.1f%%')
+        ax.axis("equal")
+
+        canvas = FigureCanvasTkAgg(fig, container)
+        canvas.show()
+        canvas.get_tk_widget().grid(row=0, column=0)
+
+    def plot_day_frequency(self):
+        """
+        Make a pie chart showing the frequency of fills for each day of the week.
+        If no fill on a particular day, the it is omitted.
+        :return: None
+        """
+        eng2nor = {"Mon": "Man",
+                   "Tue": "Tys",
+                   "Wed": "Ons",
+                   "Thu": "Tor",
+                   "Fri": "Fre",
+                   "Sat": "Lør",
+                   "Sun": "Sun"}
+
+        days = [eng2nor[datefromstring(entry["date"]).strftime("%a")] for entry in self.parent.data]
+        counts = {day: 0 for day in set(days)}
+        for entry in self.parent.data:
+            day = eng2nor[datefromstring(entry["date"]).strftime("%a")]
+            counts[day] += 1
+
+        container = tk.Toplevel(self)
+        container.resizable(False, False)
+
+        fig = Figure()
+        ax = fig.add_subplot(111)
+        explosions = [0.05 for i in counts.keys()]
+
+        ax.pie(counts.values(),
+               explode=explosions,
+               labels=counts.keys(),
+               shadow=True,
+               startangle=90,
+               autopct='%1.1f%%')
+        ax.axis("equal")
+
+        canvas = FigureCanvasTkAgg(fig, container)
+        canvas.show()
+        canvas.get_tk_widget().grid(row=0, column=0)
+
+    def fill_report(self):
+        """
+        Collect some summaries and statistics, and display for the user.
+        :return: None
+        """
+        container = tk.Toplevel(self)
+        container.resizable(False, False)
+
+        frame_top = tk.Frame(container)
+        frame_top.grid(row=0, column=0, columnspan=2)
+
+        frame_left = tk.Frame(container)
+        frame_left.grid(row=1, column=0)
+
+        frame_right = tk.Frame(container)
+        frame_right.grid(row=1, column=1)
+
+        tk.Label(frame_top, text="Samandrag", font=self.parent.font_heading).grid(row=0, column=0)
+
+        tk.Label(frame_left, text="Total antal fyllingar: ").grid(row=1, column=0, sticky=tk.W)
+        tk.Label(frame_left, text=len(self.parent.data)).grid(row=1, column=1, sticky=tk.E)
+
+        tk.Label(frame_left, text="Total kostnad: ").grid(row=2, column=0, sticky=tk.W)
+        decimal.getcontext().prec = 2
+        total_sum = sum([float(entry["price"]) * float(entry["volume"]) for entry in self.parent.data])
+        tk.Label(frame_left, text=f"{round(total_sum, 2)} Kroner").grid(row=2, column=1, sticky=tk.E)
+
+
+def datefromstring(str):
+    """
+    Helper function. Take a date string of the format 'yyyy-mm-dd'
+    and return a datetime.date object
+    :param str: yyyy-mm-dd
+    :return: datetime.date
+    """
+    return datetime.date(*list(map(int, str.split("-"))))
 
 
 app = Gassy()
