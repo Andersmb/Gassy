@@ -8,6 +8,7 @@ from matplotlib import pyplot as plt
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import numpy as np
+import os
 import json
 import datetime
 import decimal
@@ -19,8 +20,12 @@ class Gassy(tk.Tk):
         tk.Tk.__init__(self, *args, **kwargs)
         self.columnconfigure(0, weight=1)
         self.startup = True
-        self.datafile = "/Users/Anders/Documents/github/Gassy/data.json"
-        self.backupfile = "/Users/Anders/Documents/github/Gassy/.data_backup.json"
+        if "Anders" in os.path.expanduser("~"):
+            self.datafile = "/Users/Anders/Documents/github/Gassy/data.json"
+            self.backupfile = "/Users/Anders/Documents/github/Gassy/.data_backup.json"
+        elif "abr121" in os.path.expanduser("~"):
+            self.datafile = "/Users/abr121/Documents/github/Gassy/data.json"
+            self.backupfile = "/Users/abr121/Documents/github/Gassy/.data_backup.json"
 
         self.stations = ["Circle K", "Shell", "Best", "Uno-X", "Esso"]
         self.bonuses = ["Trumf", "Coop", "Ingen bonus"]
@@ -63,6 +68,11 @@ class Gassy(tk.Tk):
         self.mainwindow.grid_forget()
         self.graphing.grid(row=0, column=0)
 
+    def refresh_data(self):
+        with open(self.datafile) as f:
+            self.data = json.load(f)
+            return
+
 
 class MainWindow(tk.Frame):
     def __init__(self, parent):
@@ -97,9 +107,13 @@ class MainWindow(tk.Frame):
                                     command=self.parent.show_graphing, font=self.parent.font_main)
         button_graphing.grid(row=3, column=0, sticky=tk.EW, padx=20, pady=5)
 
+        button_refresh_data = tk.Button(frame_right, text="Oppdater fyllingsdata",
+                                        command=self.parent.refresh_data, font=self.parent.font_main)
+        button_refresh_data.grid(row=4, column=0, sticky=tk.EW, padx=20, pady=5)
+
         button_exit = tk.Button(frame_right, text="Lukk",
                                 command=self.parent.destroy, fg="red", font=self.parent.font_main)
-        button_exit.grid(row=4, column=0, sticky=tk.EW, padx=20, pady=5)
+        button_exit.grid(row=5, column=0, sticky=tk.EW, padx=20, pady=5)
 
 
 class EditFills(tk.Frame):
@@ -109,18 +123,45 @@ class EditFills(tk.Frame):
         self.selected = tk.StringVar()
 
         self.grid(row=0, column=0, sticky=tk.NSEW)
-        self.rowconfigure(0, weight=1)
-        self.rowconfigure(1, weight=1)
+        #self.rowconfigure(0, weight=1)
+        #self.rowconfigure(1, weight=1)
+        #self.columnconfigure(0, weight=1)
+        #self.columnconfigure(1, weight=1)
 
-        self.frame_left = tk.Frame(self)
+        # Frame for left side title
+        self.frame_left_title = tk.Frame(self)
+        self.frame_left_title.grid(row=0, column=0, sticky=tk.NW)
+
+        # Frame to contain canvas and scroll
+        self.frame_left_main = tk.Frame(self)
+        self.frame_left_main.grid(row=1, column=0, sticky=tk.NW)
+
+        # Frame to contain fill data
         self.frame_right = tk.Frame(self)
-        self.frame_left.grid(row=0, column=0, sticky=tk.NSEW)
-        self.frame_right.grid(row=0, column=1, sticky=tk.NSEW)
+        self.frame_right.grid(row=0, column=2, rowspan=2, sticky=tk.NSEW)
 
-        tk.Label(self.frame_left, text="Fyllingar",
-                 font=self.parent.font_heading).grid(row=0, column=0, sticky=tk.EW)
+        # Add canvas to hold dates
+        self.canvas = tk.Canvas(self.frame_left_main)
+        self.canvas.grid(row=0, column=0)
+
+        # Make vertical scrollbar
+        self.vsb = tk.Scrollbar(self.frame_left_main, command=self.canvas.yview)
+        self.vsb.grid(row=0, column=0, sticky=tk.NS)
+        self.canvas.configure(yscrollcommand=self.vsb.set)
+
+        # Add frame to canvas to hold dates
+        self.frame_dates = tk.Frame(self.canvas)
+
+        # Create canvas window to hold the date frame
+        self.canvas.create_window((0,0), window=self.frame_dates, anchor=tk.NW)
+
+        self.frame_dates.bind("<Configure>", self.update_scrollregion)
+
+        # Make title labels
+        tk.Label(self.frame_left_title, text="Fyllingar",
+                 font=self.parent.font_heading).grid(row=0, column=0, sticky=tk.W)
         tk.Label(self.frame_right, text="Fyllingsdata",
-                 font=self.parent.font_heading).grid(row=0, column=0, columnspan=3, sticky=tk.EW)
+                 font=self.parent.font_heading).grid(row=0, column=0, columnspan=3)
 
         # tk Entries for showing data
         self.entry_volume = tk.Entry(self.frame_right, font=self.parent.font_main, width=10)
@@ -172,14 +213,21 @@ class EditFills(tk.Frame):
         fills = [datetime.date(*list(map(int, date))) for date in fills]
 
         ROW = 1
-        for i, fill in enumerate(sorted(fills)):
-            label = tk.Label(self.frame_left, text=fill, font=self.parent.font_main, height=1)
+        for i, fill in enumerate(sorted(fills, reverse=True)):
+            label = tk.Label(self.frame_dates, text=fill, font=self.parent.font_main, height=1)
             label.grid(row=ROW, column=0)
             label.bind("<Button-1>", lambda event, date=fill, i=i: self.show_fill_data(event, date, i))
 
             ROW += 1
 
         self.sanity_check()
+
+    def update_scrollregion(self, event):
+        """Update scroll region of frame holding dates when new dates are added"""
+        self.canvas.configure(scrollregion=self.canvas.bbox(tk.ALL))
+
+    def onMouseWheel(self, event):
+        print("lol")
 
     def edit_help(self, index):
         """
@@ -288,11 +336,11 @@ class EditFills(tk.Frame):
         """
         # First update all labels such that the one clicked is green
         ROW = 1
-        for i, fill in enumerate(sorted(fills)):
+        for i, fill in enumerate(sorted(fills, reverse=True)):
             if i == index:
-                label = tk.Label(self.frame_left, text=fill, bg="lightgreen", font=self.parent.font_main, height=1)
+                label = tk.Label(self.frame_dates, text=fill, bg="lightgreen", font=self.parent.font_main, height=1)
             else:
-                label = tk.Label(self.frame_left, text=fill, font=self.parent.font_main, height=1)
+                label = tk.Label(self.frame_dates, text=fill, font=self.parent.font_main, height=1)
             label.grid(row=ROW, column=0)
             label.bind("<Button-1>", lambda event, date=fill, i=i: self.show_fill_data(event, date, i))
 
@@ -473,7 +521,7 @@ class AddNew(tk.Frame):
 
         self.grid(row=0, column=0, sticky=tk.NSEW)
 
-        tk.Label(self, text="Legg til ny fylling").grid(row=0, column=0)
+        tk.Label(self, text="Legg til ny fylling", font=self.parent.font_heading).grid(row=0, column=0)
         self.entry_volume = tk.Entry(self, font=self.parent.font_main)
         self.entry_price = tk.Entry(self, font=self.parent.font_main)
         self.entry_date = tk.Entry(self, font=self.parent.font_main)
@@ -528,8 +576,8 @@ class AddNew(tk.Frame):
             return
 
         data = {}
-        data["bonus"] = "False" if self.bonus.get() == "Ingen bonus" else self.bonus.get()
-        data["station"] = self.station.get()
+        data["bonus"] = "False" if self.parent.bonus.get() == "Ingen bonus" else self.parent.bonus.get()
+        data["station"] = self.parent.station.get()
         data["volume"] = self.entry_volume.get()
         data["price"] = self.entry_price.get()
         data["time"] = self.entry_time.get()
