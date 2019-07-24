@@ -71,7 +71,7 @@ class Gassy(tk.Tk):
     def refresh_data(self):
         with open(self.datafile) as f:
             self.data = json.load(f)
-            return
+            return tk.messagebox.showinfo("Gassy", "Suksessfull henting av data.")
 
 
 class MainWindow(tk.Frame):
@@ -394,8 +394,8 @@ class EditFills(tk.Frame):
 
         # First make a dict containing the updated data
         updated_data = {
-            "volume": self.entry_volume.get(),
-            "price": self.entry_price.get(),
+            "volume": float(self.entry_volume.get()),
+            "price": float(self.entry_price.get()),
             "time": self.entry_time.get(),
             "date": self.entry_date.get(),
             "bonus": "False" if self.parent.bonus.get() == "Ingen bonus" else self.parent.bonus.get(),
@@ -578,8 +578,8 @@ class AddNew(tk.Frame):
         data = {}
         data["bonus"] = "False" if self.parent.bonus.get() == "Ingen bonus" else self.parent.bonus.get()
         data["station"] = self.parent.station.get()
-        data["volume"] = self.entry_volume.get()
-        data["price"] = self.entry_price.get()
+        data["volume"] = float(self.entry_volume.get())
+        data["price"] = float(self.entry_price.get())
         data["time"] = self.entry_time.get()
         data["date"] = self.entry_date.get()
 
@@ -980,13 +980,41 @@ class Graphing(tk.Frame):
 
         tk.Label(frame_top, text="Samandrag", font=self.parent.font_heading).grid(row=0, column=0)
 
+        # Total number of fills
         tk.Label(frame_left, text="Total antal fyllingar: ").grid(row=1, column=0, sticky=tk.W)
         tk.Label(frame_left, text=len(self.parent.data)).grid(row=1, column=1, sticky=tk.E)
 
+        # Total cost of all fills
         tk.Label(frame_left, text="Total kostnad: ").grid(row=2, column=0, sticky=tk.W)
-        decimal.getcontext().prec = 2
         total_sum = sum([float(entry["price"]) * float(entry["volume"]) for entry in self.parent.data])
-        tk.Label(frame_left, text=f"{round(total_sum, 2)} Kroner").grid(row=2, column=1, sticky=tk.E)
+        tk.Label(frame_left, text=f"{self.myround(total_sum)} Kroner").grid(row=2, column=1, sticky=tk.E)
+
+        # Lowest price
+        prices = [entry["price"] for entry in self.parent.data]
+        tk.Label(frame_left, text="Lågaste literpris: ").grid(row=3, column=0, sticky=tk.W)
+        tk.Label(frame_left, text=f"{self.myround(min(prices))} Kroner").grid(row=3, column=1, sticky=tk.E)
+
+        # Highest price
+        tk.Label(frame_left, text="Høgaste literpris: ").grid(row=4, column=0, sticky=tk.W)
+        tk.Label(frame_left, text=f"{self.myround(max(prices))} Kroner").grid(row=4, column=1, sticky=tk.E)
+
+        # Average price
+        tk.Label(frame_left, text="Gjennomsnittleg literpris: ").grid(row=5, column=0, sticky=tk.W)
+        tk.Label(frame_left, text=f"{self.myround(sum(prices) / len(prices))} Kroner").grid(row=5, column=1, sticky=tk.E)
+
+
+    @staticmethod
+    def myround(n):
+        """Simple rounding routine to guarantee that a float is displayed with two decimals.
+        Only meant to be used in the fill report method for presenting statistics.
+
+        Returns : float or str"""
+        rounded = round(n, 2)
+        decimals = str(rounded).split(".")[1]
+        if len(decimals) < 2:
+            return str(rounded) + "0"
+        else:
+            return rounded
 
 
 def datefromstring(str):
