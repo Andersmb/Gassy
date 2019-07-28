@@ -27,7 +27,7 @@ class Gassy(tk.Tk):
             self.datafile = "/Users/abr121/Documents/github/Gassy/data.json"
             self.backupfile = "/Users/abr121/Documents/github/Gassy/.data_backup.json"
 
-        self.stations = ["Circle K", "Shell", "Best", "Uno-X", "Esso"]
+        self.stations = ["Circle K", "Shell", "Best", "Uno-X", "Esso", "OKQ8"]
         self.bonuses = ["Trumf", "Coop", "Ingen bonus"]
 
         self.bonus = tk.StringVar()
@@ -1002,6 +1002,21 @@ class Graphing(tk.Frame):
         tk.Label(frame_left, text="Gjennomsnittleg literpris: ").grid(row=5, column=0, sticky=tk.W)
         tk.Label(frame_left, text=f"{self.myround(sum(prices) / len(prices))} Kroner").grid(row=5, column=1, sticky=tk.E)
 
+        # Lowest volume
+        volumes = [entry["volume"] for entry in self.parent.data]
+        tk.Label(frame_left, text="Minste volum: ").grid(row=6, column=0, sticky=tk.W)
+        tk.Label(frame_left, text=f"{self.myround(min(volumes))} liter").grid(row=6, column=1, sticky=tk.E)
+
+        # Highest volume
+        tk.Label(frame_left, text="Styrste volum: ").grid(row=7, column=0, sticky=tk.W)
+        tk.Label(frame_left, text=f"{self.myround(max(volumes))} liter").grid(row=7, column=1, sticky=tk.E)
+
+        # Average volume
+        tk.Label(frame_left, text="Gjennomsnittleg volum: ").grid(row=8, column=0, sticky=tk.W)
+        tk.Label(frame_left, text=f"{self.myround(sum(volumes) / len(volumes))} liter").grid(row=8, column=1, sticky=tk.E)
+
+        # Gjennomsnittleg antal dagar mellom fyllingar
+        # todo
 
     @staticmethod
     def myround(n):
