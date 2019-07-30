@@ -11,8 +11,6 @@ import numpy as np
 import os
 import json
 import datetime
-import decimal
-from decimal import Decimal
 
 
 class Gassy(tk.Tk):
