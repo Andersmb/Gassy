@@ -1,3 +1,1 @@
-Plotting ideas:
-
-1)
+- Store data files and config files in the cloud with MongoDB
