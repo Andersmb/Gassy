@@ -1,1 +1,8 @@
 - Store data files and config files in the cloud with MongoDB
+
+- In price plot, when mouse enters a plotted data point, then show the date corresponding
+  for that fill
+
+- Cumulative volume in report
+
+- Help buttons for the report to explain what the numbers mean?
