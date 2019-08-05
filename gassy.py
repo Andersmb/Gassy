@@ -11,6 +11,7 @@ import numpy as np
 import os
 import json
 import datetime
+from pprint import pprint
 
 
 class Gassy(tk.Tk):
@@ -858,6 +859,10 @@ class Graphing(tk.Frame):
                   command=self.fill_report,
                   font=self.parent.font_main).grid(row=5, column=0, pady=5, padx=5, sticky=tk.W)
 
+        tk.Button(frame_right, text="Literpris for ulike dagar",
+                  command=self.plot_day_price_variation,
+                  font=self.parent.font_main).grid(row=6, column=0, pady=5, padx=5, sticky=tk.W)
+
     def plot_price(self):
         """
         Make scatter plot of the price vs date. Also add dashed line indicating the average price.
@@ -959,6 +964,56 @@ class Graphing(tk.Frame):
         canvas = FigureCanvasTkAgg(fig, container)
         canvas.show()
         canvas.get_tk_widget().grid(row=0, column=0)
+
+    def plot_day_price_variation(self):
+        """
+        Plot the average gas price for each day of the week in bar plot, with the standard deviation
+        added to indicate the variation.
+        :return: None
+        """
+        eng2nor = {"Mon": "Man",
+                   "Tue": "Tys",
+                   "Wed": "Ons",
+                   "Thu": "Tor",
+                   "Fri": "Fre",
+                   "Sat": "Lør",
+                   "Sun": "Sun"}
+
+        days = [eng2nor[datefromstring(entry["date"]).strftime("%a")] for entry in self.parent.data]
+        prices = {day: {"data": [], "mean": 0, "std": 0} for day in set(days)}
+        for entry in self.parent.data:
+            day = eng2nor[datefromstring(entry["date"]).strftime("%a")]
+            prices[day]["data"].append(entry["price"])
+
+        for day in prices.keys():
+            prices[day]["mean"] = sum(prices[day]["data"]) / len(prices[day]["data"])
+            prices[day]["std"] = np.std(prices[day]["data"])
+
+        # Plot data
+        container = tk.Toplevel(self)
+        container.resizable(False, False)
+
+        fig = Figure()
+        ax = fig.add_subplot(111)
+        FS = 14
+
+        xs = prices.keys()
+        ys = [prices[day]["mean"] for day in xs]
+        stds = [prices[day]["std"] for day in xs]
+        ns = [len(prices[day]["data"]) for day in xs]
+
+        ax.set_ylabel("Kroner", fontsize=FS)
+        ax.tick_params(labelsize=FS)
+        ax.bar(xs, ys, yerr=stds, capsize=5, ec="black", linewidth=2, color="skyblue")
+
+        for n, day in zip(ns, prices.keys()):
+            ax.text(day, 1, f"n = {n}", horizontalalignment="center")
+
+        canvas = FigureCanvasTkAgg(fig, container)
+        canvas.show()
+        canvas.get_tk_widget().grid(row=0, column=0)
+
+
 
     def fill_report(self):
         """
