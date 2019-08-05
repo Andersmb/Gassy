@@ -16,11 +16,12 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/gassy.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="229">
-              <caret line="1010" column="50" selection-start-line="1010" selection-start-column="50" selection-end-line="1010" selection-end-column="50" />
+            <state relative-caret-position="61">
+              <caret line="967" column="39" selection-start-line="967" selection-start-column="39" selection-end-line="967" selection-end-column="39" />
               <folding>
                 <element signature="e#0#20#0" expanded="true" />
                 <element signature="e#35062#35892#0" />
+                <element signature="e#37497#38879#0" />
               </folding>
             </state>
           </provider>
@@ -242,11 +243,12 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/gassy.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="229">
-          <caret line="1010" column="50" selection-start-line="1010" selection-start-column="50" selection-end-line="1010" selection-end-column="50" />
+        <state relative-caret-position="61">
+          <caret line="967" column="39" selection-start-line="967" selection-start-column="39" selection-end-line="967" selection-end-column="39" />
           <folding>
             <element signature="e#0#20#0" expanded="true" />
             <element signature="e#35062#35892#0" />
+            <element signature="e#37497#38879#0" />
           </folding>
         </state>
       </provider>
