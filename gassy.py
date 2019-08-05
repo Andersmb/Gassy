@@ -1013,8 +1013,6 @@ class Graphing(tk.Frame):
         canvas.show()
         canvas.get_tk_widget().grid(row=0, column=0)
 
-
-
     def fill_report(self):
         """
         Collect some summaries and statistics, and display for the user.
@@ -1083,8 +1081,6 @@ class Graphing(tk.Frame):
 
         tk.Label(frame_left, text="Gjennomsnittleg fyllfrekvens: ").grid(row=10, column=0, sticky=tk.W)
         tk.Label(frame_left, text=f"{avg_delta} dagar").grid(row=10, column=1, sticky=tk.E)
-
-
 
     @staticmethod
     def myround(n, k=2):
