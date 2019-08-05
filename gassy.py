@@ -1014,9 +1014,6 @@ class Graphing(tk.Frame):
         tk.Label(frame_left, text="Gjennomsnittleg volum: ").grid(row=8, column=0, sticky=tk.W)
         tk.Label(frame_left, text=f"{self.myround(sum(volumes) / len(volumes))} liter").grid(row=8, column=1, sticky=tk.E)
 
-        # Gjennomsnittleg antal dagar mellom fyllingar
-        # todo
-
         # Sparepotensiale. Total kostnad dersom alle fyllingane var gjort ved lågast registrerte literpris
         min_price = min(prices)
         potential_savings = self.myround(total_sum - min_price * sum([entry["volume"] for entry in self.parent.data]))
@@ -1024,15 +1021,25 @@ class Graphing(tk.Frame):
         tk.Label(frame_left, text="Sparepotensiale: ").grid(row=9, column=0, sticky=tk.W)
         tk.Label(frame_left, text=f"{potential_savings} Kroner").grid(row=9, column=1, sticky=tk.E)
 
+        # Gjennomsnittleg antal dagar mellom fyllingar
+        dates = sorted([datefromstring(entry["date"]) for entry in self.parent.data])
+        dates_delta = [dates[i+1] - dates[i] for i in range(len(dates)-1)]
+        avg_delta = self.myround(sum([delta.days for delta in dates_delta]) / len(dates_delta))
+
+        tk.Label(frame_left, text="Gjennomsnittleg fyllfrekvens: ").grid(row=10, column=0, sticky=tk.W)
+        tk.Label(frame_left, text=f"{avg_delta} dagar").grid(row=10, column=1, sticky=tk.E)
+
+
+
     @staticmethod
-    def myround(n):
+    def myround(n, k=2):
         """Simple rounding routine to guarantee that a float is displayed with two decimals.
         Only meant to be used in the fill report method for presenting statistics.
 
         Returns : float or str"""
-        rounded = round(n, 2)
+        rounded = round(n, k)
         decimals = str(rounded).split(".")[1]
-        if len(decimals) < 2:
+        if len(decimals) < k:
             return str(rounded) + "0"
         else:
             return rounded
