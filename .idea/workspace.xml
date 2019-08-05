@@ -17,10 +17,13 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/gassy.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="135">
-              <caret line="9" selection-start-line="9" selection-end-line="9" />
+            <state relative-caret-position="403">
+              <caret line="1024" column="62" selection-start-line="1024" selection-start-column="62" selection-end-line="1024" selection-end-column="62" />
               <folding>
                 <element signature="e#0#20#0" expanded="true" />
+                <element signature="e#33968#35014#0" />
+                <element signature="e#35062#35892#0" />
+                <element signature="e#35936#37173#0" />
               </folding>
             </state>
           </provider>
@@ -29,8 +32,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/todo.txt">
           <provider selected="true" editor-type-id="text-editor">
-            <state>
-              <caret column="61" selection-start-column="61" selection-end-column="61" />
+            <state relative-caret-position="105">
+              <caret line="7" column="63" selection-start-line="7" selection-start-column="63" selection-end-line="7" selection-end-column="63" />
             </state>
           </provider>
         </entry>
@@ -68,23 +71,23 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope">
-        <subPane subId="Scope 'Project Files'; set:Project Files; class com.intellij.psi.search.scope.ProjectFilesScope">
-          <expand>
-            <path>
-              <item name="Gassy" type="3d21c010:ScopeViewTreeModel$ProjectNode" />
-              <item name="~/Documents/github/Gassy" type="442cc68d:ScopeViewTreeModel$RootNode" />
-            </path>
-          </expand>
-          <select />
-        </subPane>
-      </pane>
       <pane id="ProjectPane">
         <subPane>
           <expand>
             <path>
               <item name="Gassy" type="b2602c69:ProjectViewProjectNode" />
               <item name="Gassy" type="462c0819:PsiDirectoryNode" />
+            </path>
+          </expand>
+          <select />
+        </subPane>
+      </pane>
+      <pane id="Scope">
+        <subPane subId="Scope 'Project Files'; set:Project Files; class com.intellij.psi.search.scope.ProjectFilesScope">
+          <expand>
+            <path>
+              <item name="Gassy" type="3d21c010:ScopeViewTreeModel$ProjectNode" />
+              <item name="~/Documents/github/Gassy" type="442cc68d:ScopeViewTreeModel$RootNode" />
             </path>
           </expand>
           <select />
@@ -170,8 +173,8 @@
     <frame x="0" y="23" width="1216" height="777" extended-state="0" />
     <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" sideWeight="0.48021582" visible="true" weight="0.18912134" />
-      <window_info id="Structure" order="1" sideWeight="0.51978415" side_tool="true" visible="true" weight="0.18912134" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" sideWeight="0.47841728" visible="true" weight="0.18912134" />
+      <window_info id="Structure" order="1" sideWeight="0.5215827" side_tool="true" visible="true" weight="0.18912134" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
@@ -198,6 +201,11 @@
           <url>file://$PROJECT_DIR$/gassy.py</url>
           <line>139</line>
           <option name="timeStamp" value="1" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/gassy.py</url>
+          <line>923</line>
+          <option name="timeStamp" value="2" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
@@ -231,18 +239,21 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/gassy.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="135">
-          <caret line="9" selection-start-line="9" selection-end-line="9" />
+        <state relative-caret-position="403">
+          <caret line="1024" column="62" selection-start-line="1024" selection-start-column="62" selection-end-line="1024" selection-end-column="62" />
           <folding>
             <element signature="e#0#20#0" expanded="true" />
+            <element signature="e#33968#35014#0" />
+            <element signature="e#35062#35892#0" />
+            <element signature="e#35936#37173#0" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/todo.txt">
       <provider selected="true" editor-type-id="text-editor">
-        <state>
-          <caret column="61" selection-start-column="61" selection-end-column="61" />
+        <state relative-caret-position="105">
+          <caret line="7" column="63" selection-start-line="7" selection-start-column="63" selection-end-line="7" selection-end-column="63" />
         </state>
       </provider>
     </entry>
