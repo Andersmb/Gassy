@@ -871,6 +871,7 @@ class Graphing(tk.Frame):
 
         x_s, y_s = zip(*sorted(zip(x, y)))
         x_s = ["\n".join(date.split("-")) for date in x_s]
+        x_s = range(len(y))
 
         mean = sum(map(float, y_s)) / len(list(map(float, y_s)))
         x_mean = range(len(x_s))
@@ -1015,6 +1016,13 @@ class Graphing(tk.Frame):
 
         # Gjennomsnittleg antal dagar mellom fyllingar
         # todo
+
+        # Sparepotensiale. Total kostnad dersom alle fyllingane var gjort ved lågast registrerte literpris
+        min_price = min(prices)
+        potential_savings = self.myround(total_sum - min_price * sum([entry["volume"] for entry in self.parent.data]))
+
+        tk.Label(frame_left, text="Sparepotensiale: ").grid(row=9, column=0, sticky=tk.W)
+        tk.Label(frame_left, text=f"{potential_savings} Kroner").grid(row=9, column=1, sticky=tk.E)
 
     @staticmethod
     def myround(n):
