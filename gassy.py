@@ -122,10 +122,6 @@ class EditFills(tk.Frame):
         self.selected = tk.StringVar()
 
         self.grid(row=0, column=0, sticky=tk.NSEW)
-        #self.rowconfigure(0, weight=1)
-        #self.rowconfigure(1, weight=1)
-        #self.columnconfigure(0, weight=1)
-        #self.columnconfigure(1, weight=1)
 
         # Frame for left side title
         self.frame_left_title = tk.Frame(self)
@@ -533,8 +529,8 @@ class AddNew(tk.Frame):
         option_station["menu"].config(font=self.parent.font_main)
         self.label_volume = tk.Label(self, text="Volum: ", font=self.parent.font_main)
         self.label_price = tk.Label(self, text="Literpris: ", font=self.parent.font_main)
-        self.label_date = tk.Label(self, text="Dato: ", font=self.parent.font_main)
-        self.label_time = tk.Label(self, text="Klokkeslett: ", font=self.parent.font_main)
+        self.label_date = tk.Label(self, text="Dato (åååå-mm-dd): ", font=self.parent.font_main)
+        self.label_time = tk.Label(self, text="Klokkeslett (tt:mm): ", font=self.parent.font_main)
         label_bonus = tk.Label(self, text="Bonusprogram: ", font=self.parent.font_main)
         label_station = tk.Label(self, text="Stasjon: ", font=self.parent.font_main)
 
