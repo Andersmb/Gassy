@@ -26,7 +26,7 @@ class Gassy(tk.Tk):
             self.datafile = "/Users/abr121/Documents/github/Gassy/data.json"
             self.backupfile = "/Users/abr121/Documents/github/Gassy/.data_backup.json"
 
-        self.stations = ["Circle K", "Shell", "Best", "Uno-X", "Esso", "OKQ8"]
+        self.stations = ["Circle K", "Shell", "Best", "Uno-X", "Esso", "OKQ8", "Ukjend"]
         self.bonuses = ["Trumf", "Coop", "Ingen bonus"]
 
         self.bonus = tk.StringVar()
