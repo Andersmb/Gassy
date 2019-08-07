@@ -15,14 +15,13 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/gassy.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="184">
-              <caret line="26" column="35" selection-start-line="26" selection-start-column="35" selection-end-line="26" selection-end-column="36" />
+            <state relative-caret-position="-524">
+              <caret line="124" lean-forward="true" selection-start-line="124" selection-end-line="124" />
               <folding>
                 <element signature="e#0#20#0" expanded="true" />
                 <element signature="e#33968#35014#0" />
                 <element signature="e#35062#35892#0" />
                 <element signature="e#35936#37173#0" />
-                <element signature="e#37497#38879#0" />
                 <element signature="e#38301#41881#0" />
               </folding>
             </state>
@@ -61,7 +60,7 @@
       </list>
     </option>
   </component>
-  <component name="ProjectFrameBounds" extendedState="1">
+  <component name="ProjectFrameBounds">
     <option name="y" value="23" />
     <option name="width" value="1216" />
     <option name="height" value="777" />
@@ -170,7 +169,7 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="0" y="23" width="1216" height="777" extended-state="1" />
+    <frame x="0" y="23" width="1216" height="777" extended-state="0" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" sideWeight="0.47688565" visible="true" weight="0.18912134" />
       <window_info id="Structure" order="1" sideWeight="0.5231144" side_tool="true" visible="true" weight="0.18912134" />
@@ -198,7 +197,7 @@
       <breakpoints>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/gassy.py</url>
-          <line>140</line>
+          <line>136</line>
           <option name="timeStamp" value="1" />
         </line-breakpoint>
       </breakpoints>
@@ -240,14 +239,13 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/gassy.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="184">
-          <caret line="26" column="35" selection-start-line="26" selection-start-column="35" selection-end-line="26" selection-end-column="36" />
+        <state relative-caret-position="-524">
+          <caret line="124" lean-forward="true" selection-start-line="124" selection-end-line="124" />
           <folding>
             <element signature="e#0#20#0" expanded="true" />
             <element signature="e#33968#35014#0" />
             <element signature="e#35062#35892#0" />
             <element signature="e#35936#37173#0" />
-            <element signature="e#37497#38879#0" />
             <element signature="e#38301#41881#0" />
           </folding>
         </state>
