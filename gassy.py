@@ -67,11 +67,6 @@ class Gassy(tk.Tk):
         self.mainwindow.grid_forget()
         self.graphing.grid(row=0, column=0)
 
-    def refresh_data(self):
-        with open(self.datafile) as f:
-            self.data = json.load(f)
-            return tk.messagebox.showinfo("Gassy", "Suksessfull henting av data.")
-
 
 class MainWindow(tk.Frame):
     def __init__(self, parent):
@@ -81,13 +76,13 @@ class MainWindow(tk.Frame):
         self.rowconfigure(0, weight=1)
         self.columnconfigure(0, weight=1)
 
-        frame_left = tk.Frame(self)
+        self.frame_left = tk.Frame(self)
         frame_right = tk.Frame(self)
-        frame_left.grid(row=0, column=0)
+        self.frame_left.grid(row=0, column=0)
         frame_right.grid(row=0, column=1)
 
         image = ImageTk.PhotoImage(Image.open("frontpage_gassy_small.jpg"))
-        label = tk.Label(frame_left, image=image)
+        label = tk.Label(self.frame_left, image=image)
         label.image = image
         label.grid(row=0, column=0, sticky=tk.E)
 
@@ -107,12 +102,22 @@ class MainWindow(tk.Frame):
         button_graphing.grid(row=3, column=0, sticky=tk.EW, padx=20, pady=5)
 
         button_refresh_data = tk.Button(frame_right, text="Oppdater fyllingsdata",
-                                        command=self.parent.refresh_data, font=self.parent.font_main)
+                                        command=self.refresh_data, font=self.parent.font_main)
         button_refresh_data.grid(row=4, column=0, sticky=tk.EW, padx=20, pady=5)
 
         button_exit = tk.Button(frame_right, text="Lukk",
                                 command=self.parent.destroy, fg="red", font=self.parent.font_main)
         button_exit.grid(row=5, column=0, sticky=tk.EW, padx=20, pady=5)
+
+    def refresh_data(self):
+        #with open(self.parent.datafile) as f:
+        #    self.parent.data = json.load(f)
+        image = ImageTk.PhotoImage(Image.open("frontpage_gassy_small_green.jpg"))
+        label = tk.Label(self.frame_left, image=image)
+        label.image = image
+        label.grid(row=0, column=0, sticky=tk.E)
+        self.after(500, lambda: self.__init__(self.parent))
+
 
 
 class EditFills(tk.Frame):
