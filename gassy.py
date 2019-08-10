@@ -1002,13 +1002,24 @@ class Graphing(tk.Frame):
         ys = [prices[day]["mean"] for day in xs]
         stds = [prices[day]["std"] for day in xs]
         ns = [len(prices[day]["data"]) for day in xs]
+        UPPER = 18
+        LOWER = 14
+        WIDTH = 0.8
+        ax.set_ylim(LOWER, UPPER)
 
         ax.set_ylabel("Kroner", fontsize=FS)
         ax.tick_params(labelsize=FS)
-        ax.bar(xs, ys, yerr=stds, capsize=5, ec="black", linewidth=2, color="skyblue")
+        ax.bar(xs, ys, yerr=stds, capsize=5, ec="black", linewidth=2, color="skyblue", width=WIDTH)
 
         for n, day in zip(ns, prices.keys()):
-            ax.text(day, 1, f"n = {n}", horizontalalignment="center")
+            ax.text(day, LOWER+0.5, f"n = {n}", horizontalalignment="center")
+
+        mean = sum(map(float, ys)) / len(list(map(float, ys)))
+        x_mean = range(len(xs))
+        y_mean = [mean for x in x_mean]
+        ax.plot(x_mean, y_mean, linestyle="--", color="black", label="Gjennomsnitt")
+
+        ax.legend(fontsize=FS)
 
         canvas = FigureCanvasTkAgg(fig, container)
         canvas.show()
