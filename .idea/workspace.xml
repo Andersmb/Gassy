@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="f756c3ca-9319-40ad-ae47-7649d2405e5d" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/gassy.py" beforeDir="false" afterPath="$PROJECT_DIR$/gassy.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -15,8 +16,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/gassy.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="233">
-              <caret line="118" column="21" selection-start-line="118" selection-start-column="21" selection-end-line="118" selection-end-column="21" />
+            <state relative-caret-position="178">
+              <caret line="1015" lean-forward="true" selection-start-line="1015" selection-end-line="1015" />
               <folding>
                 <element signature="e#0#20#0" expanded="true" />
               </folding>
@@ -166,10 +167,11 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="0" y="23" width="1216" height="777" extended-state="0" />
+    <frame x="0" y="23" width="1216" height="777" extended-state="6" />
+    <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.47445256" visible="true" weight="0.18912134" />
-      <window_info id="Structure" order="1" sideWeight="0.52554744" side_tool="true" visible="true" weight="0.18912134" />
+      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.47201946" visible="true" weight="0.18912134" />
+      <window_info id="Structure" order="1" sideWeight="0.5279805" side_tool="true" visible="true" weight="0.18912134" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
@@ -229,8 +231,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/gassy.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="233">
-          <caret line="118" column="21" selection-start-line="118" selection-start-column="21" selection-end-line="118" selection-end-column="21" />
+        <state relative-caret-position="178">
+          <caret line="1015" lean-forward="true" selection-start-line="1015" selection-end-line="1015" />
           <folding>
             <element signature="e#0#20#0" expanded="true" />
           </folding>
