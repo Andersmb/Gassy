@@ -164,10 +164,11 @@ class EditFills(tk.Frame):
                  font=self.parent.font_heading).grid(row=0, column=0, columnspan=3)
 
         # tk Entries for showing data
-        self.entry_volume = tk.Entry(self.frame_right, font=self.parent.font_main, width=10)
-        self.entry_price = tk.Entry(self.frame_right, font=self.parent.font_main, width=10)
-        self.entry_date = tk.Entry(self.frame_right, font=self.parent.font_main, width=10)
-        self.entry_time = tk.Entry(self.frame_right, font=self.parent.font_main, width=10)
+        self.entry_volume = tk.Entry(self.frame_right, font=self.parent.font_main, width=20)
+        self.entry_price = tk.Entry(self.frame_right, font=self.parent.font_main, width=20)
+        self.entry_date = tk.Entry(self.frame_right, font=self.parent.font_main, width=20)
+        self.entry_time = tk.Entry(self.frame_right, font=self.parent.font_main, width=20)
+        self.entry_comment = tk.Entry(self.frame_right, font=self.parent.font_main, width=20)
         option_bonus = tk.OptionMenu(self.frame_right, self.parent.bonus, *self.parent.bonuses)
         option_bonus.config(font=self.parent.font_main)
         option_bonus["menu"].config(font=self.parent.font_main)
@@ -178,6 +179,7 @@ class EditFills(tk.Frame):
         self.label_price = tk.Label(self.frame_right, text="Literpris (Kr/L): ", font=self.parent.font_main)
         self.label_date = tk.Label(self.frame_right, text="Dato (åååå-mm-dd): ", font=self.parent.font_main)
         self.label_time = tk.Label(self.frame_right, text="Klokkeslett (tt:mm): ", font=self.parent.font_main)
+        self.label_comment = tk.Label(self.frame_right, text="Kommentar: ", font=self.parent.font_main)
         label_bonus = tk.Label(self.frame_right, text="Bonusprogram: ", font=self.parent.font_main)
         label_station = tk.Label(self.frame_right, text="Stasjon: ", font=self.parent.font_main)
 
@@ -185,26 +187,28 @@ class EditFills(tk.Frame):
         self.label_price.grid(row=2, column=0, sticky=tk.E, pady=5, padx=5)
         self.label_date.grid(row=3, column=0, sticky=tk.E, pady=5, padx=5)
         self.label_time.grid(row=4, column=0, sticky=tk.E, pady=5, padx=5)
-        label_bonus.grid(row=5, column=0, sticky=tk.E, pady=5, padx=5)
-        label_station.grid(row=6, column=0, sticky=tk.E, pady=5, padx=5)
+        self.label_comment.grid(row=5, column=0, sticky=tk.E, pady=5, padx=5)
+        label_bonus.grid(row=6, column=0, sticky=tk.E, pady=5, padx=5)
+        label_station.grid(row=7, column=0, sticky=tk.E, pady=5, padx=5)
         self.entry_volume.grid(row=1, column=1, sticky=tk.W, pady=5, padx=5)
         self.entry_price.grid(row=2, column=1, sticky=tk.W, pady=5, padx=5)
         self.entry_date.grid(row=3, column=1, sticky=tk.W, pady=5, padx=5)
         self.entry_time.grid(row=4, column=1, sticky=tk.W, pady=5, padx=5)
-        option_bonus.grid(row=5, column=1, sticky=tk.W, pady=5, padx=5)
-        option_station.grid(row=6, column=1, sticky=tk.W, pady=5, padx=5)
+        self.entry_comment.grid(row=5, column=1, sticky=tk.W, pady=5, padx=5)
+        option_bonus.grid(row=6, column=1, sticky=tk.W, pady=5, padx=5)
+        option_station.grid(row=7, column=1, sticky=tk.W, pady=5, padx=5)
 
-        for row in range(6):
+        for row in range(7):
             tk.Button(self.frame_right, text="Hjelp",
                       command=lambda index=row: self.edit_help(index+1),
                       font=self.parent.font_main).grid(row=row+1, column=2, pady=5, padx=5)
 
         tk.Button(self.frame_right, text="Attende",
                   command=lambda: self.parent.show_main(self),
-                  font=self.parent.font_main).grid(row=7, column = 1, sticky=tk.W, pady=5, padx=5)
+                  font=self.parent.font_main).grid(row=8, column = 1, sticky=tk.W, pady=5, padx=5)
         tk.Button(self.frame_right, text="Oppdater fylling",
                   command=self.update_fill_entry,
-                  font=self.parent.font_main).grid(row=7, column=0, pady=5, padx=5)
+                  font=self.parent.font_main).grid(row=8, column=0, pady=5, padx=5)
 
         global fills
         fills = [fill["date"] for fill in self.parent.data]
@@ -225,9 +229,6 @@ class EditFills(tk.Frame):
     def update_scrollregion(self, event):
         """Update scroll region of frame holding dates when new dates are added"""
         self.canvas.configure(scrollregion=self.canvas.bbox(tk.ALL))
-
-    def onMouseWheel(self, event):
-        print("lol")
 
     def edit_help(self, index):
         """
@@ -299,6 +300,14 @@ class EditFills(tk.Frame):
             return InfoBox(self, msg, image)
         elif index == 5:
             msg = """
+            Her kan du skrive inn ein 
+            kommentar om fyllinga, til dømes 
+            'Ferietur juli 2019'.
+            """
+            image = ImageTk.PhotoImage(Image.open("help_station.jpg"))
+            return InfoBox(self, msg, image)
+        elif index == 6:
+            msg = """
             Her veljer du det bonusprogrammet du brukte.
             Dersom du ikkje brukde noko bonusprogram,
             så veljer du "Ingen bonus".
@@ -309,7 +318,8 @@ class EditFills(tk.Frame):
             """
             image = ImageTk.PhotoImage(Image.open("help_bonus.jpg"))
             return InfoBox(self, msg, image)
-        elif index == 6:
+
+        elif index == 7:
             msg = """
             Her veljer du bensinstasjonen der
             du fylte drivstoff. Dersom kjeden
@@ -362,6 +372,9 @@ class EditFills(tk.Frame):
         self.entry_time.delete(0, tk.END)
         self.entry_time.insert(0, entry["time"])
 
+        self.entry_comment.delete(0, tk.END)
+        self.entry_comment.insert(0, entry["comment"])
+
         self.parent.bonus.set("Ingen bonus" if entry["bonus"] == "False" else entry["bonus"])
         self.parent.station.set(entry["station"])
 
@@ -399,7 +412,8 @@ class EditFills(tk.Frame):
             "time": self.entry_time.get(),
             "date": self.entry_date.get(),
             "bonus": "False" if self.parent.bonus.get() == "Ingen bonus" else self.parent.bonus.get(),
-            "station": self.parent.station.get()
+            "station": self.parent.station.get(),
+            "comment": self.entry_comment.get()
         }
 
         # Now collect all OTHER fill entries from the original data file
