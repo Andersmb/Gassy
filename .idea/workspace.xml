@@ -3,8 +3,8 @@
   <component name="ChangeListManager">
     <list default="true" id="f756c3ca-9319-40ad-ae47-7649d2405e5d" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data.csv" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/gassy.py" beforeDir="false" afterPath="$PROJECT_DIR$/gassy.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/todo.txt" beforeDir="false" afterPath="$PROJECT_DIR$/todo.txt" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -13,12 +13,12 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="FileEditorManager">
-    <leaf>
+    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/todo.txt">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="165">
-              <caret line="11" column="64" lean-forward="true" selection-start-line="11" selection-start-column="64" selection-end-line="11" selection-end-column="64" />
+              <caret line="11" selection-start-line="11" selection-end-line="11" />
             </state>
           </provider>
         </entry>
@@ -26,11 +26,19 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/gassy.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="32">
-              <caret line="415" column="47" selection-start-line="415" selection-start-column="47" selection-end-line="415" selection-end-column="47" />
+            <state relative-caret-position="144">
+              <caret line="887" column="62" selection-start-line="887" selection-start-column="62" selection-end-line="887" selection-end-column="62" />
               <folding>
                 <element signature="e#0#20#0" expanded="true" />
-                <element signature="e#17383#20516#0" />
+                <element signature="e#392#2310#0" />
+                <element signature="e#2345#4785#0" />
+                <element signature="e#4820#21262#0" />
+                <element signature="e#21293#31480#0" />
+                <element signature="e#31515#32796#0" />
+                <element signature="e#36163#36993#0" />
+                <element signature="e#37037#38274#0" />
+                <element signature="e#38324#40399#0" />
+                <element signature="e#40436#44016#0" />
               </folding>
             </state>
           </provider>
@@ -59,11 +67,10 @@
       </list>
     </option>
   </component>
-  <component name="ProjectFrameBounds">
-    <option name="x" value="447" />
+  <component name="ProjectFrameBounds" extendedState="6">
     <option name="y" value="23" />
-    <option name="width" value="1718" />
-    <option name="height" value="1034" />
+    <option name="width" value="1216" />
+    <option name="height" value="777" />
   </component>
   <component name="ProjectView">
     <navigator currentView="Scope" currentSubView="Scope 'Project Files'; set:Project Files; class com.intellij.psi.search.scope.ProjectFilesScope" proportions="" version="1">
@@ -169,10 +176,10 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="447" y="23" width="1718" height="1034" extended-state="0" />
+    <frame x="0" y="23" width="1216" height="777" extended-state="6" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.55028737" visible="true" weight="0.1372315" />
-      <window_info id="Structure" order="1" sideWeight="0.44971263" side_tool="true" visible="true" weight="0.1372315" />
+      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.5478261" visible="true" weight="0.19414225" />
+      <window_info id="Structure" order="1" sideWeight="0.45217392" side_tool="true" visible="true" weight="0.19414225" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
@@ -182,7 +189,7 @@
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" />
       <window_info anchor="bottom" id="Version Control" order="7" />
-      <window_info active="true" anchor="bottom" id="Terminal" order="8" visible="true" weight="0.2611465" />
+      <window_info active="true" anchor="bottom" id="Terminal" order="8" visible="true" weight="0.32846716" />
       <window_info anchor="bottom" id="Event Log" order="9" side_tool="true" />
       <window_info anchor="bottom" id="Python Console" order="10" weight="0.3211679" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
@@ -222,17 +229,25 @@
     <entry file="file://$PROJECT_DIR$/todo.txt">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="165">
-          <caret line="11" column="64" lean-forward="true" selection-start-line="11" selection-start-column="64" selection-end-line="11" selection-end-column="64" />
+          <caret line="11" selection-start-line="11" selection-end-line="11" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/gassy.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="32">
-          <caret line="415" column="47" selection-start-line="415" selection-start-column="47" selection-end-line="415" selection-end-column="47" />
+        <state relative-caret-position="144">
+          <caret line="887" column="62" selection-start-line="887" selection-start-column="62" selection-end-line="887" selection-end-column="62" />
           <folding>
             <element signature="e#0#20#0" expanded="true" />
-            <element signature="e#17383#20516#0" />
+            <element signature="e#392#2310#0" />
+            <element signature="e#2345#4785#0" />
+            <element signature="e#4820#21262#0" />
+            <element signature="e#21293#31480#0" />
+            <element signature="e#31515#32796#0" />
+            <element signature="e#36163#36993#0" />
+            <element signature="e#37037#38274#0" />
+            <element signature="e#38324#40399#0" />
+            <element signature="e#40436#44016#0" />
           </folding>
         </state>
       </provider>

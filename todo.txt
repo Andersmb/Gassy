@@ -7,6 +7,5 @@
 
 - Help buttons for the report to explain what the numbers mean?
 
-- Add possibility for adding a comment when adding new fills
-  This means I also need to make a feature that "fixes" a data file and adds empty commends
-  for the fills with no comments, to make the structure general.
+- Add possibility for adding a comment when adding new fills.
+  On the way!!
