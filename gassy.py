@@ -119,7 +119,6 @@ class MainWindow(tk.Frame):
         self.after(500, lambda: self.__init__(self.parent))
 
 
-
 class EditFills(tk.Frame):
     def __init__(self, parent):
         tk.Frame.__init__(self)
@@ -886,11 +885,13 @@ class Graphing(tk.Frame):
         container = tk.Toplevel(self)
         container.resizable(False, False)
 
-        x = [entry["date"] for entry in self.parent.data]
-        y = [entry["price"] for entry in self.parent.data]
+        data = self.filter_filldata()
+
+        x = [entry["date"] for entry in data]
+        y = [entry["price"] for entry in data]
 
         x_s, y_s = zip(*sorted(zip(x, y)))
-        x_s = ["\n".join(date.split("-")) for date in x_s]
+        #x_s = ["\n".join(date.split("-")) for date in x_s]
         x_s = range(len(y))
 
         mean = sum(map(float, y_s)) / len(list(map(float, y_s)))
@@ -911,15 +912,18 @@ class Graphing(tk.Frame):
 
         canvas = FigureCanvasTkAgg(fig, container)
         canvas.show()
-        canvas.get_tk_widget().grid(row=0, column=0)
+        canvas.get_tk_widget().grid(row=1, column=0)
+
 
     def plot_station_frequency(self):
         """
         Make a pie chart showing the frequency of fills for each station.
         :return: None
         """
-        counts = {station: 0 for station in set([entry["station"] for entry in self.parent.data])}
-        for entry in self.parent.data:
+        data = self.filter_filldata()
+
+        counts = {station: 0 for station in set([entry["station"] for entry in data])}
+        for entry in data:
             counts[entry["station"]] += 1
 
         container = tk.Toplevel(self)
@@ -955,9 +959,11 @@ class Graphing(tk.Frame):
                    "Sat": "Lør",
                    "Sun": "Sun"}
 
-        days = [eng2nor[datefromstring(entry["date"]).strftime("%a")] for entry in self.parent.data]
+        data = self.filter_filldata()
+
+        days = [eng2nor[datefromstring(entry["date"]).strftime("%a")] for entry in data]
         counts = {day: 0 for day in set(days)}
-        for entry in self.parent.data:
+        for entry in data:
             day = eng2nor[datefromstring(entry["date"]).strftime("%a")]
             counts[day] += 1
 
@@ -994,9 +1000,11 @@ class Graphing(tk.Frame):
                    "Sat": "Lør",
                    "Sun": "Sun"}
 
-        days = [eng2nor[datefromstring(entry["date"]).strftime("%a")] for entry in self.parent.data]
+        data = self.filter_filldata()
+
+        days = [eng2nor[datefromstring(entry["date"]).strftime("%a")] for entry in data]
         prices = {day: {"data": [], "mean": 0, "std": 0} for day in set(days)}
-        for entry in self.parent.data:
+        for entry in data:
             day = eng2nor[datefromstring(entry["date"]).strftime("%a")]
             prices[day]["data"].append(entry["price"])
 
@@ -1044,6 +1052,8 @@ class Graphing(tk.Frame):
         Collect some summaries and statistics, and display for the user.
         :return: None
         """
+        data = self.filter_filldata()
+
         container = tk.Toplevel(self)
         container.resizable(False, False)
 
@@ -1060,15 +1070,15 @@ class Graphing(tk.Frame):
 
         # Total number of fills
         tk.Label(frame_left, text="Total antal fyllingar: ").grid(row=1, column=0, sticky=tk.W)
-        tk.Label(frame_left, text=len(self.parent.data)).grid(row=1, column=1, sticky=tk.E)
+        tk.Label(frame_left, text=len(data)).grid(row=1, column=1, sticky=tk.E)
 
         # Total cost of all fills
         tk.Label(frame_left, text="Total kostnad: ").grid(row=2, column=0, sticky=tk.W)
-        total_sum = sum([float(entry["price"]) * float(entry["volume"]) for entry in self.parent.data])
+        total_sum = sum([float(entry["price"]) * float(entry["volume"]) for entry in data])
         tk.Label(frame_left, text=f"{self.myround(total_sum)} Kroner").grid(row=2, column=1, sticky=tk.E)
 
         # Lowest price
-        prices = [entry["price"] for entry in self.parent.data]
+        prices = [entry["price"] for entry in data]
         tk.Label(frame_left, text="Lågaste literpris: ").grid(row=3, column=0, sticky=tk.W)
         tk.Label(frame_left, text=f"{self.myround(min(prices))} Kroner").grid(row=3, column=1, sticky=tk.E)
 
@@ -1081,7 +1091,7 @@ class Graphing(tk.Frame):
         tk.Label(frame_left, text=f"{self.myround(sum(prices) / len(prices))} Kroner").grid(row=5, column=1, sticky=tk.E)
 
         # Lowest volume
-        volumes = [entry["volume"] for entry in self.parent.data]
+        volumes = [entry["volume"] for entry in data]
         tk.Label(frame_left, text="Minste volum: ").grid(row=6, column=0, sticky=tk.W)
         tk.Label(frame_left, text=f"{self.myround(min(volumes))} liter").grid(row=6, column=1, sticky=tk.E)
 
@@ -1095,18 +1105,28 @@ class Graphing(tk.Frame):
 
         # Sparepotensiale. Total kostnad dersom alle fyllingane var gjort ved lågast registrerte literpris
         min_price = min(prices)
-        potential_savings = self.myround(total_sum - min_price * sum([entry["volume"] for entry in self.parent.data]))
+        potential_savings = self.myround(total_sum - min_price * sum([entry["volume"] for entry in data]))
 
         tk.Label(frame_left, text="Sparepotensiale: ").grid(row=9, column=0, sticky=tk.W)
         tk.Label(frame_left, text=f"{potential_savings} Kroner").grid(row=9, column=1, sticky=tk.E)
 
         # Gjennomsnittleg antal dagar mellom fyllingar
-        dates = sorted([datefromstring(entry["date"]) for entry in self.parent.data])
+        dates = sorted([datefromstring(entry["date"]) for entry in data])
         dates_delta = [dates[i+1] - dates[i] for i in range(len(dates)-1)]
         avg_delta = self.myround(sum([delta.days for delta in dates_delta]) / len(dates_delta))
 
         tk.Label(frame_left, text="Gjennomsnittleg fyllfrekvens: ").grid(row=10, column=0, sticky=tk.W)
         tk.Label(frame_left, text=f"{avg_delta} dagar").grid(row=10, column=1, sticky=tk.E)
+
+    def filter_filldata(self, year=datetime.MINYEAR, month=1, day=1):
+        """
+        Include only fill data starting from the provided start date.
+        :param year: int
+        :param month: int
+        :param day: int
+        :return: list, filtered to include only data starting from provided start time
+        """
+        return list(filter(lambda fill:  datefromstring(fill["date"]) >= datetime.date(year, month, day), self.parent.data))
 
     @staticmethod
     def myround(n, k=2):
@@ -1120,6 +1140,30 @@ class Graphing(tk.Frame):
             return str(rounded) + "0"
         else:
             return rounded
+
+
+class FilterDateToolBar(tk.Frame):
+    def __init__(self, parent, row, column):
+        """
+        Toolbar for setting year, month, and day for filtering the fill data.
+
+        Provide the row and column for where to place the frame
+        :param parent: parent widget for the toolbar
+        :param row: int
+        :param column: int
+        """
+        tk.Frame.__init__(self)
+
+        self.parent = parent
+        self.row = row
+        self.column = column
+
+        self.grid(row=self.row, column=self.column)
+
+        tk.Label(self, text="År: ").grid(row=0, column=0)
+        tk.Label(self, text="Månad: ").grid(row=0, column=1)
+        tk.Label(self, text="Dag: ").grid(row=0, column=2)
+
 
 
 def datefromstring(str):
