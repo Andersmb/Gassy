@@ -11,7 +11,6 @@ import numpy as np
 import os
 import json
 import datetime
-from pprint import pprint
 
 
 class Gassy(tk.Tk):
@@ -201,7 +200,7 @@ class EditFills(tk.Frame):
 
         for row in range(7):
             tk.Button(self.frame_right, text="Hjelp",
-                      command=lambda index=row: self.edit_help(index+1),
+                      command=lambda index=row: edit_help(index+1),
                       font=self.parent.font_main).grid(row=row+1, column=2, pady=5, padx=5)
 
         tk.Button(self.frame_right, text="Attende",
@@ -230,108 +229,6 @@ class EditFills(tk.Frame):
     def update_scrollregion(self, event):
         """Update scroll region of frame holding dates when new dates are added"""
         self.canvas.configure(scrollregion=self.canvas.bbox(tk.ALL))
-
-    def edit_help(self, index):
-        """
-        Display help messages for adding or editing fill data.
-        :param index: the index of the tk.Button that is put into the EditFills window.
-        :return: InfoBox instance
-        """
-        if index == 1:
-            msg = """
-            Her oppgir du antal liter du fylte.
-            
-            Talet må vere eit desimaltal, med "punktum" 
-            som desimalseparator. Talet må også innehalde 
-            to desimalar for å vere gyldig.
-            
-            Nokre døme:
-            Rett: 45.23
-            Feil: 45,23
-            Feil: 45.2
-            Feil: 45.223
-            """
-
-            image = ImageTk.PhotoImage(Image.open("help_volum.jpg"))
-            return InfoBox(self, msg, image)
-        elif index == 2:
-            msg = """
-            Her oppgir du literprisen for fyllinga di. 
-            
-            Talet må vere eit desimaltal, med "punktum" 
-            som desimalseparator. Talet må også innehalde 
-            to desimalar for å vere gyldig.
-            
-            Nokre døme: 
-            Rett: 16.99
-            Feil: 16,99
-            Feil: 16.9
-            Feil: 16.991
-            """
-            image = ImageTk.PhotoImage(Image.open("help_price.jpg"))
-            return InfoBox(self, msg, image)
-        elif index == 3:
-            msg = """
-            Her veljer du datoen for fyllinga.
-            Formatet er år-månad-dag. Nokre døme:
-            
-            Rett: 1986-01-07
-            Feil: 07-01-2986
-            Feil: 07/1-86
-            Feil: 7. januar 1986
-            Feil: 1986-1-7
-            """
-            image = ImageTk.PhotoImage(Image.open("help_date.jpg"))
-            return InfoBox(self, msg, image)
-        elif index == 4:
-            msg = """
-            Her set du klokkeslettet for fyllinga. 
-            Det skal stå nøyaktig klokkeslett på
-            kvitteringa, men du kan også leggje inn
-            eit omtrentleg klokkeslett.
-            
-            Legg inn i 24-timarsformat. Nokre døme:
-            
-            Rett: 00:01
-            Feil: 24:01
-            Feil: 23:4
-            Feil: 23:411
-            """
-            image = ImageTk.PhotoImage(Image.open("help_time.jpg"))
-            return InfoBox(self, msg, image)
-        elif index == 5:
-            msg = """
-            Her kan du skrive inn ein 
-            kommentar om fyllinga, til dømes 
-            'Ferietur juli 2019'.
-            """
-            image = ImageTk.PhotoImage(Image.open("help_station.jpg"))
-            return InfoBox(self, msg, image)
-        elif index == 6:
-            msg = """
-            Her veljer du det bonusprogrammet du brukte.
-            Dersom du ikkje brukde noko bonusprogram,
-            så veljer du "Ingen bonus".
-            
-            Hugs at somme bonusprogram ikkje er 
-            kompatible med somme stasjonar. Pass
-            på at du veljer korrekte kombinasjonar.
-            """
-            image = ImageTk.PhotoImage(Image.open("help_bonus.jpg"))
-            return InfoBox(self, msg, image)
-
-        elif index == 7:
-            msg = """
-            Her veljer du bensinstasjonen der
-            du fylte drivstoff. Dersom kjeden
-            ikkje er lagt inn i Gassy, så send
-            ein e-post og etterspør kjeden.
-            
-            anders.brakestad@gmail.com
-            """
-            image = ImageTk.PhotoImage(Image.open("help_station.jpg"))
-            return InfoBox(self, msg, image)
-
 
     def show_fill_data(self, event, date, index):
         """
@@ -542,6 +439,8 @@ class AddNew(tk.Frame):
         self.entry_price = tk.Entry(self, font=self.parent.font_main)
         self.entry_date = tk.Entry(self, font=self.parent.font_main)
         self.entry_time = tk.Entry(self, font=self.parent.font_main)
+        self.entry_comment = tk.Entry(self, font=self.parent.font_main)
+
         option_bonus = tk.OptionMenu(self, self.parent.bonus, *self.parent.bonuses)
         option_bonus.config(font=self.parent.font_main)
         option_bonus["menu"].config(font=self.parent.font_main)
@@ -554,28 +453,32 @@ class AddNew(tk.Frame):
         self.label_time = tk.Label(self, text="Klokkeslett (tt:mm): ", font=self.parent.font_main)
         label_bonus = tk.Label(self, text="Bonusprogram: ", font=self.parent.font_main)
         label_station = tk.Label(self, text="Stasjon: ", font=self.parent.font_main)
+        self.label_comment = tk.Label(self, text="Kommentar", font=self.parent.font_main)
 
         self.label_volume.grid(row=1, column=0, sticky=tk.E)
         self.label_price.grid(row=2, column=0, sticky=tk.E)
         self.label_date.grid(row=3, column=0, sticky=tk.E)
         self.label_time.grid(row=4, column=0, sticky=tk.E)
-        label_bonus.grid(row=5, column=0, sticky=tk.E)
-        label_station.grid(row=6, column=0, sticky=tk.E)
+        self.label_comment.grid(row=5, column=0, sticky=tk.E)
+        label_bonus.grid(row=6, column=0, sticky=tk.E)
+        label_station.grid(row=7, column=0, sticky=tk.E)
+
         self.entry_volume.grid(row=1, column=1, sticky=tk.W)
         self.entry_price.grid(row=2, column=1, sticky=tk.W)
         self.entry_date.grid(row=3, column=1, sticky=tk.W)
         self.entry_time.grid(row=4, column=1, sticky=tk.W)
-        option_bonus.grid(row=5, column=1, sticky=tk.W)
-        option_station.grid(row=6, column=1, sticky=tk.W)
+        self.entry_comment.grid(row=5, column=1, sticky=tk.W)
+        option_bonus.grid(row=6, column=1, sticky=tk.W)
+        option_station.grid(row=7, column=1, sticky=tk.W)
 
-        for row in range(6):
-            tk.Button(self, text="Hjelp", command=lambda index=row: self.edit_help(index+1),
+        for row in range(7):
+            tk.Button(self, text="Hjelp", command=lambda index=row: edit_help(index+1),
                       font=self.parent.font_main).grid(row=row+1, column=2)
 
         tk.Button(self, text="Lagre", command=self.append_new_fill,
-                  font=self.parent.font_main).grid(row=7, column=0, sticky=tk.W)
+                  font=self.parent.font_main).grid(row=8, column=0, sticky=tk.W)
         tk.Button(self, text="Attende", command=lambda: self.parent.show_main(self),
-                  font=self.parent.font_main).grid(row=7, column=0, sticky=tk.E)
+                  font=self.parent.font_main).grid(row=8, column=0, sticky=tk.E)
 
         self.sanity_check()
 
@@ -598,6 +501,7 @@ class AddNew(tk.Frame):
         data["price"] = float(self.entry_price.get())
         data["time"] = self.entry_time.get()
         data["date"] = self.entry_date.get()
+        data["comment"] = self.entry_comment.get()
 
         with open(self.parent.backupfile, "w") as backupdata:
             json.dump(self.parent.data, backupdata, indent=4)
@@ -704,101 +608,9 @@ class AddNew(tk.Frame):
 
         self.after(200, self.sanity_check)
 
-    def edit_help(self, index):
-        """
-        Display help messages for adding or editing fill data.
-        :param index: the index of the tk.Button that is put into the EditFills window.
-        :return: InfoBox instance
-        """
-        if index == 1:
-            msg = """
-            Her oppgir du antal liter du fylte.
-
-            Talet må vere eit desimaltal, med "punktum" 
-            som desimalseparator. Talet må også innehalde 
-            to desimalar for å vere gyldig.
-
-            Nokre døme:
-            Rett: 45.23
-            Feil: 45,23
-            Feil: 45.2
-            Feil: 45.223
-            """
-
-            image = ImageTk.PhotoImage(Image.open("help_volum.jpg"))
-            return InfoBox(self, msg, image)
-        elif index == 2:
-            msg = """
-            Her oppgir du literprisen for fyllinga di. 
-
-            Talet må vere eit desimaltal, med "punktum" 
-            som desimalseparator. Talet må også innehalde 
-            to desimalar for å vere gyldig.
-
-            Nokre døme: 
-            Rett: 16.99
-            Feil: 16,99
-            Feil: 16.9
-            Feil: 16.991
-            """
-            image = ImageTk.PhotoImage(Image.open("help_price.jpg"))
-            return InfoBox(self, msg, image)
-        elif index == 3:
-            msg = """
-            Her veljer du datoen for fyllinga.
-            Formatet er år-månad-dag. Nokre døme:
-
-            Rett: 1986-01-07
-            Feil: 07-01-2986
-            Feil: 07/1-86
-            Feil: 7. januar 1986
-            Feil: 1986-1-7
-            """
-            image = ImageTk.PhotoImage(Image.open("help_date.jpg"))
-            return InfoBox(self, msg, image)
-        elif index == 4:
-            msg = """
-            Her set du klokkeslettet for fyllinga. 
-            Det skal stå nøyaktig klokkeslett på
-            kvitteringa, men du kan også leggje inn
-            eit omtrentleg klokkeslett.
-
-            Legg inn i 24-timarsformat. Nokre døme:
-
-            Rett: 00:01
-            Feil: 24:01
-            Feil: 23:4
-            Feil: 23:411
-            """
-            image = ImageTk.PhotoImage(Image.open("help_time.jpg"))
-            return InfoBox(self, msg, image)
-        elif index == 5:
-            msg = """
-            Her veljer du det bonusprogrammet du brukte.
-            Dersom du ikkje brukde noko bonusprogram,
-            så veljer du "Ingen bonus".
-
-            Hugs at somme bonusprogram ikkje er 
-            kompatible med somme stasjonar. Pass
-            på at du veljer korrekte kombinasjonar.
-            """
-            image = ImageTk.PhotoImage(Image.open("help_bonus.jpg"))
-            return InfoBox(self, msg, image)
-        elif index == 6:
-            msg = """
-            Her veljer du bensinstasjonen der
-            du fylte drivstoff. Dersom kjeden
-            ikkje er lagt inn i Gassy, så send
-            ein e-post og etterspør kjeden.
-
-            anders.brakestad@gmail.com
-            """
-            image = ImageTk.PhotoImage(Image.open("help_station.jpg"))
-            return InfoBox(self, msg, image)
-
 
 class InfoBox(tk.Toplevel):
-    def __init__(self, parent, msg, image):
+    def __init__(self, msg, image):
         """
         Custom pop-up window for displaying information, similar to tk.messagebox.showinfo,
         used for displaying help messages.
@@ -807,8 +619,7 @@ class InfoBox(tk.Toplevel):
         :param msg: string containing the info message to be shown in the InfoBox
         :param image: PhotoImage object used to decorate left side of InfoBox
         """
-        tk.Toplevel.__init__(self, parent)
-        self.parent = parent
+        tk.Toplevel.__init__(self)
         self.msg = msg
         self.image = image
 
@@ -823,13 +634,12 @@ class InfoBox(tk.Toplevel):
         label_image.grid(row=0, column=0, sticky=tk.N)
         label_image.image = self.image
 
-        textbox = tk.Text(frame_right, font=self.parent.parent.font_heading, width=40, height=12)
+        textbox = tk.Text(frame_right, width=40, height=12, font=app.font_main)
         textbox.grid(row=0, column=0, sticky=tk.NSEW)
         textbox.insert(tk.END, self.msg)
         textbox.config(state=tk.DISABLED)
 
-        tk.Button(frame_left, text="Den er grei!", font=self.parent.parent.font_heading,
-                  command=self.destroy).grid(row=1, column=0)
+        tk.Button(frame_left, text="Den er grei!", font=app.font_main, command=self.destroy).grid(row=1, column=0)
 
 
 class Graphing(tk.Frame):
@@ -1166,7 +976,6 @@ class FilterDateToolBar(tk.Frame):
         tk.Label(self, text="Dag: ").grid(row=0, column=2)
 
 
-
 def datefromstring(str):
     """
     Helper function. Take a date string of the format 'yyyy-mm-dd'
@@ -1175,6 +984,110 @@ def datefromstring(str):
     :return: datetime.date
     """
     return datetime.date(*list(map(int, str.split("-"))))
+
+
+def edit_help(index):
+    """
+    Display help messages for adding or editing fill data.
+    :param index: the index of the tk.Button that is put into the EditFills window.
+    :return: InfoBox instance
+    """
+    if index == 1:
+        msg = """
+        Her oppgir du antal liter du fylte.
+
+        Talet må vere eit desimaltal, med "punktum" 
+        som desimalseparator. Talet må også innehalde 
+        to desimalar for å vere gyldig.
+
+        Nokre døme:
+        Rett: 45.23
+        Feil: 45,23
+        Feil: 45.2
+        Feil: 45.223
+        """
+
+        image = ImageTk.PhotoImage(Image.open("help_volum.jpg"))
+        return InfoBox(msg, image)
+    elif index == 2:
+        msg = """
+        Her oppgir du literprisen for fyllinga di. 
+
+        Talet må vere eit desimaltal, med "punktum" 
+        som desimalseparator. Talet må også innehalde 
+        to desimalar for å vere gyldig.
+
+        Nokre døme: 
+        Rett: 16.99
+        Feil: 16,99
+        Feil: 16.9
+        Feil: 16.991
+        """
+        image = ImageTk.PhotoImage(Image.open("help_price.jpg"))
+        return InfoBox(msg, image)
+    elif index == 3:
+        msg = """
+        Her veljer du datoen for fyllinga.
+        Formatet er år-månad-dag. Nokre døme:
+
+        Rett: 1986-01-07
+        Feil: 07-01-2986
+        Feil: 07/1-86
+        Feil: 7. januar 1986
+        Feil: 1986-1-7
+        """
+        image = ImageTk.PhotoImage(Image.open("help_date.jpg"))
+        return InfoBox(msg, image)
+    elif index == 4:
+        msg = """
+        Her set du klokkeslettet for fyllinga. 
+        Det skal stå nøyaktig klokkeslett på
+        kvitteringa, men du kan også leggje inn
+        eit omtrentleg klokkeslett.
+
+        Legg inn i 24-timarsformat. Nokre døme:
+
+        Rett: 00:01
+        Feil: 24:01
+        Feil: 23:4
+        Feil: 23:411
+        """
+        image = ImageTk.PhotoImage(Image.open("help_time.jpg"))
+        return InfoBox(msg, image)
+    elif index == 5:
+        msg = """
+        Her kan du skrive inn ein 
+        kommentar om fyllinga. Til dømes 
+        kan du skrive 'Ferietur juli 2019',
+        for å halde styr på drivstofforbruket
+        for ein lang køyretur.
+        """
+        image = ImageTk.PhotoImage(Image.open("help_station.jpg"))
+        return InfoBox(msg, image)
+    elif index == 6:
+        msg = """
+        Her veljer du det bonusprogrammet du brukte.
+        Dersom du ikkje brukde noko bonusprogram,
+        så veljer du "Ingen bonus".
+
+        Hugs at somme bonusprogram ikkje er 
+        kompatible med somme stasjonar. Pass
+        på at du veljer korrekte kombinasjonar.
+        """
+        image = ImageTk.PhotoImage(Image.open("help_bonus.jpg"))
+        return InfoBox(msg, image)
+
+    elif index == 7:
+        msg = """
+        Her veljer du bensinstasjonen der
+        du fylte drivstoff. Dersom kjeden
+        ikkje er lagt inn i Gassy, så send
+        ein e-post og etterspør kjeden.
+
+        anders.brakestad@gmail.com
+        """
+        image = ImageTk.PhotoImage(Image.open("help_station.jpg"))
+        return InfoBox(msg, image)
 
 
 app = Gassy()
