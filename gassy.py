@@ -781,7 +781,8 @@ class Graphing(tk.Frame):
         data = self.filter_filldata()
 
         days = [eng2nor[datefromstring(entry["date"]).strftime("%a")] for entry in data]
-        counts = {day: 0 for day in nor2eng.keys() if day in set(days)}
+        counts = {day: 0 for day in reversed(list(nor2eng.keys())) if day in set(days)}
+
         for entry in data:
             day = eng2nor[datefromstring(entry["date"]).strftime("%a")]
             counts[day] += 1
