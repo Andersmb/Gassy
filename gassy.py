@@ -2,6 +2,7 @@ import tkinter as tk
 import tkinter.messagebox
 from tkinter import font
 from PIL import Image, ImageTk
+from collections import OrderedDict
 import matplotlib
 matplotlib.use("TkAgg")
 from matplotlib import pyplot as plt
@@ -810,11 +811,20 @@ class Graphing(tk.Frame):
                    "Fri": "Fre",
                    "Sat": "Lør",
                    "Sun": "Sun"}
+        nor2eng = {"Man": "Mon",
+                   "Tys": "Tue",
+                   "Ons": "Web",
+                   "Tor": "Thu",
+                   "Fre": "Fri",
+                   "Lør": "Sat",
+                   "Sun": "Sun"}
 
         data = self.filter_filldata()
 
         days = [eng2nor[datefromstring(entry["date"]).strftime("%a")] for entry in data]
-        prices = {day: {"data": [], "mean": 0, "std": 0} for day in set(days)}
+
+        prices = OrderedDict({day: {"data": [], "mean": 0, "std": 0} for day in nor2eng.keys() if day in set(days)})
+
         for entry in data:
             day = eng2nor[datefromstring(entry["date"]).strftime("%a")]
             prices[day]["data"].append(entry["price"])
@@ -842,13 +852,13 @@ class Graphing(tk.Frame):
 
         ax.set_ylabel("Kroner", fontsize=FS)
         ax.tick_params(labelsize=FS)
-        ax.bar(xs, ys, yerr=stds, capsize=5, ec="black", linewidth=2, color="skyblue", width=WIDTH)
 
-        for n, day in zip(ns, prices.keys()):
+        for day, y, std, n in zip(xs, ys, stds, ns):
+            ax.bar(day, y, yerr=std, capsize=5, ec="black", linewidth=2, color="skyblue", width=WIDTH)
             ax.text(day, LOWER+0.5, f"n = {n}", horizontalalignment="center")
 
         mean = sum(map(float, ys)) / len(list(map(float, ys)))
-        x_mean = range(len(xs))
+        x_mean = np.arange(-WIDTH/2, len(xs)-WIDTH/2, 0.01)
         y_mean = [mean for x in x_mean]
         ax.plot(x_mean, y_mean, linestyle="--", color="black", label="Gjennomsnitt")
 
