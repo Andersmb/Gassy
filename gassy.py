@@ -37,11 +37,7 @@ class Gassy(tk.Tk):
         self.font_heading = font.Font(family="Optima", size=20)
         self.font_main = font.Font(family="Optima", size=14)
 
-        try:
-            with open(self.datafile) as f:
-                self.data = json.load(f)
-        except IOError:
-            tk.messagebox.showwarning("Åtvaring", "Fyllingsdata ikkje funne!")
+        self.load_data()
 
         self.mainwindow = MainWindow(self)
         self.show_main(self)
@@ -66,6 +62,13 @@ class Gassy(tk.Tk):
         self.graphing = Graphing(self)
         self.mainwindow.grid_forget()
         self.graphing.grid(row=0, column=0)
+
+    def load_data(self):
+        try:
+            with open(self.datafile) as f:
+                self.data = json.load(f)
+        except IOError:
+            tk.messagebox.showwarning("Åtvaring", "Fyllingsdata ikkje funne!")
 
 
 class MainWindow(tk.Frame):
@@ -110,8 +113,7 @@ class MainWindow(tk.Frame):
         button_exit.grid(row=5, column=0, sticky=tk.EW, padx=20, pady=5)
 
     def refresh_data(self):
-        #with open(self.parent.datafile) as f:
-        #    self.parent.data = json.load(f)
+        self.parent.load_data()
         image = ImageTk.PhotoImage(Image.open("frontpage_gassy_small_green.jpg"))
         label = tk.Label(self.frame_left, image=image)
         label.image = image
@@ -428,6 +430,7 @@ class EditFills(tk.Frame):
             other_data.append(updated_data)
             json.dump(other_data, maindata, indent=4)
 
+        self.parent.load_data()
         tk.messagebox.showinfo("Gassy", "Fyllingsdata oppdatert!")
 
     def sanity_check(self):
@@ -891,12 +894,11 @@ class Graphing(tk.Frame):
         y = [entry["price"] for entry in data]
 
         x_s, y_s = zip(*sorted(zip(x, y)))
-        #x_s = ["\n".join(date.split("-")) for date in x_s]
         x_s = range(len(y))
 
         mean = sum(map(float, y_s)) / len(list(map(float, y_s)))
         x_mean = range(len(x_s))
-        y_mean = [mean for x in x_mean]
+        y_mean = [mean for x_s in x_mean]
 
         FS = 14
         fig = Figure()
@@ -913,7 +915,6 @@ class Graphing(tk.Frame):
         canvas = FigureCanvasTkAgg(fig, container)
         canvas.show()
         canvas.get_tk_widget().grid(row=1, column=0)
-
 
     def plot_station_frequency(self):
         """
