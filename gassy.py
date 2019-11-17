@@ -3,6 +3,7 @@ import tkinter.messagebox
 from tkinter import font
 from PIL import Image, ImageTk
 from collections import OrderedDict
+from time import sleep
 import matplotlib
 matplotlib.use("TkAgg")
 from matplotlib import pyplot as plt
@@ -699,6 +700,45 @@ class Graphing(tk.Frame):
         container = tk.Toplevel(self)
         container.resizable(False, False)
 
+        fig = Figure()
+        ax = fig.add_subplot(111)
+
+        # Make dummy annotation
+        annot = ax.annotate("",
+                            xy=(10,15),
+                            xytext=(20,0),
+                            textcoords="offset points",
+                            bbox=dict(boxstyle="round", fc="skyblue"),
+                            arrowprops=dict(arrowstyle="->"))
+        #print(ax.get_xlim())
+        annot.get_bbox_patch().set_alpha(0.4)
+        annot.set_visible(False)
+
+        def update_annot(ind):
+            pos = sc.get_offsets()[ind]
+            annot.xy = pos
+            text = x[ind]
+            annot.set_text(text)
+
+        def hover(event):
+            vis = annot.get_visible()
+            if event.inaxes == ax:
+                cont, index = sc.contains(event)
+                if cont:
+                    ind = index["ind"][0]  # Get useful value from dictionary
+                    update_annot(ind)
+                    annot.set_visible(True)
+                    fig.canvas.draw_idle()
+                else:
+                    if vis:
+                        annot.set_visible(False)
+                        fig.canvas.draw_idle()
+
+        canvas = FigureCanvasTkAgg(fig, container)
+        canvas.show()
+        canvas.get_tk_widget().grid(row=1, column=0)
+        fig.canvas.mpl_connect("motion_notify_event", hover)
+
         data = self.filter_filldata()
 
         x = [entry["date"] for entry in data]
@@ -712,20 +752,16 @@ class Graphing(tk.Frame):
         y_mean = [mean for x_s in x_mean]
 
         FS = 14
-        fig = Figure()
-        ax = fig.add_subplot(111)
 
-        ax.scatter(x_s, y_s, marker="o", color="red", edgecolor="black")
+        sc = ax.scatter(x_s, y_s, marker="o", color="red", edgecolor="black")
         ax.plot(x_mean, y_mean, linestyle="--", color="black", label="Gjennomsnitt")
 
         ax.set_ylabel("Literpris (Kroner/L)", fontsize=FS)
+        ax.set_xticklabels([])
 
         ax.grid()
         ax.legend(fontsize=FS)
 
-        canvas = FigureCanvasTkAgg(fig, container)
-        canvas.show()
-        canvas.get_tk_widget().grid(row=1, column=0)
 
     def plot_station_frequency(self):
         """
