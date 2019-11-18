@@ -64,6 +64,11 @@ class Gassy(tk.Tk):
         self.mainwindow.grid_forget()
         self.graphing.grid(row=0, column=0)
 
+    def show_settings(self):
+        self.settings = Settings(self)
+        self.mainwindow.grid_forget()
+        self.settings.grid(row=0, column=0)
+
     def load_data(self):
         try:
             with open(self.datafile) as f:
@@ -109,9 +114,13 @@ class MainWindow(tk.Frame):
                                         command=self.refresh_data, font=self.parent.font_main)
         button_refresh_data.grid(row=4, column=0, sticky=tk.EW, padx=20, pady=5)
 
+        button_settings = tk.Button(frame_right, text="Innstillingar",
+                                    command=self.parent.show_settings, font=self.parent.font_main)
+        button_settings.grid(row=5, column=0, sticky=tk.EW, padx=20, pady=5)
+
         button_exit = tk.Button(frame_right, text="Lukk",
                                 command=self.parent.destroy, fg="red", font=self.parent.font_main)
-        button_exit.grid(row=5, column=0, sticky=tk.EW, padx=20, pady=5)
+        button_exit.grid(row=6, column=0, sticky=tk.EW, padx=20, pady=5)
 
     def refresh_data(self):
         self.parent.load_data()
@@ -120,6 +129,20 @@ class MainWindow(tk.Frame):
         label.image = image
         label.grid(row=0, column=0, sticky=tk.E)
         self.after(500, lambda: self.__init__(self.parent))
+
+
+class Settings(tk.Frame):
+    def __init__(self, parent):
+        tk.Frame.__init__(self)
+        self.parent = parent
+
+        self.grid(row=0, column=0, sticky=tk.NSEW)
+
+        self.frame = tk.Frame(self)
+        self.frame.grid(row=0, column=0)
+
+        tk.Label(self.frame, text="Innstillingar").grid(row=0, column=0)
+        tk.Button(self.frame, text="Tilbake", command=lambda: self.parent.show_main(self)).grid(row=1, column=0)
 
 
 class EditFills(tk.Frame):
