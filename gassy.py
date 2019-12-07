@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import messagebox, font, simpledialog
+from tkinter import messagebox, font
 from PIL import Image, ImageTk
 from collections import OrderedDict
 import matplotlib
@@ -11,8 +11,6 @@ import os
 import json
 import datetime
 from copy import deepcopy
-
-# TODO Make user able to set the path to data file and path to backup file
 
 
 class Gassy(tk.Tk):
@@ -205,19 +203,19 @@ class MainWindow(tk.Frame):
                                     command=self.parent.show_settings, font=self.parent.font_main)
         button_settings.grid(row=5, column=0, sticky=tk.EW, padx=20, pady=5)
 
-        button_exit = tk.Button(frame_right, text="Lukk",
+        button_exit = tk.Button(frame_right, text="Avslutt",
                                 command=self.parent.destroy, fg="red", font=self.parent.font_main)
         button_exit.grid(row=6, column=0, sticky=tk.EW, padx=20, pady=5)
 
         if len(self.parent.data) == 0:
-            tk.Label(self.frame_left, text="Datafila er tom :(",
+            tk.Label(self.frame_left, text="Datafila di er tom :(",
                      font=self.parent.font_main, fg="red").grid(row=1, column=0)
         else:
-            tk.Label(self.frame_left, text=f"Du har datafil med {len(self.parent.data)} fyllingar :)",
+            tk.Label(self.frame_left, text=f"Datafila di har {len(self.parent.data)} fyllingar :)",
                      font=self.parent.font_main, fg="green").grid(row=1, column=0)
 
     def refresh_data(self):
-        self.parent.load_data()
+        self.parent.data = self.parent.load_data()
         image = ImageTk.PhotoImage(Image.open("frontpage_gassy_small_green.jpg"))
         label = tk.Label(self.frame_left, image=image)
         label.image = image
@@ -356,7 +354,7 @@ class EditFills(tk.Frame):
                       font=self.parent.font_main).grid(row=row+1, column=2, pady=5, padx=5)
 
         tk.Button(self.frame_right, text="Attende",
-                  command=lambda: self.parent.show_main(self),
+                  command=self.close,
                   font=self.parent.font_main).grid(row=8, column = 1, sticky=tk.W, pady=5, padx=5)
         tk.Button(self.frame_right, text="Oppdater fylling",
                   command=self.update_fill_entry,
@@ -377,6 +375,10 @@ class EditFills(tk.Frame):
             ROW += 1
 
         self.sanity_check()
+
+    def close(self):
+        self.parent.show_main(self)
+        self.destroy()
 
     def update_scrollregion(self, event):
         """Update scroll region of frame holding dates when new dates are added"""
@@ -472,11 +474,11 @@ class EditFills(tk.Frame):
             if entry["date"] != self.selected.get():
                 other_data.append(entry)
 
-        with open(self.parent.datafile, "w") as f:
+        with open(self.parent.datafile.get(), "w") as f:
             other_data.append(updated_data)
             json.dump(other_data, f, indent=4)
 
-        self.parent.load_data()
+        self.parent.data = self.parent.load_data()
         tk.messagebox.showinfo("Gassy", "Fyllingsdata oppdatert!")
 
     def sanity_check(self):
@@ -847,6 +849,13 @@ class Graphing(tk.Frame):
         fig = Figure()
         ax = fig.add_subplot(111)
 
+        # Make informative title
+        msg = """Her er alle registrerte literprisar lagt inn i eit koordinatsystem, 
+        og du kan sjå korleis literprisen har variert. Hold musepeikaren over 
+        datapunktene for å vise datoen for fyllinga."""
+        tk.Label(container, text=msg).grid(row=0, column=0)
+        tk.Button(container, text="Attende", command=container.destroy, font=self.parent.font_main).grid(row=1, column=0)
+
         # Make dummy annotation
         annot = ax.annotate("",
                             xy=(10,15),
@@ -880,7 +889,7 @@ class Graphing(tk.Frame):
 
         canvas = FigureCanvasTkAgg(fig, container)
         canvas.show()
-        canvas.get_tk_widget().grid(row=1, column=0)
+        canvas.get_tk_widget().grid(row=2, column=0)
         fig.canvas.mpl_connect("motion_notify_event", hover)
 
         data = self.filter_filldata()
@@ -921,6 +930,13 @@ class Graphing(tk.Frame):
         container = tk.Toplevel(self)
         container.resizable(False, False)
 
+        # Make informative title
+        msg = """Dette paidiagrammet gir ei oversikt over kvar du
+        oftast har fylt opp tanken."""
+        tk.Label(container, text=msg).grid(row=0, column=0)
+        tk.Button(container, text="Attende", command=container.destroy, font=self.parent.font_main).grid(row=1,
+                                                                                                         column=0)
+
         fig = Figure()
         ax = fig.add_subplot(111)
         explosions = [0.05 for i in counts.keys()]
@@ -935,7 +951,7 @@ class Graphing(tk.Frame):
 
         canvas = FigureCanvasTkAgg(fig, container)
         canvas.show()
-        canvas.get_tk_widget().grid(row=0, column=0)
+        canvas.get_tk_widget().grid(row=2, column=0)
 
     def plot_day_frequency(self):
         """
@@ -970,6 +986,13 @@ class Graphing(tk.Frame):
         container = tk.Toplevel(self)
         container.resizable(False, False)
 
+        # Make informative title
+        msg = """Dette paidiagrammet gir ei oversikt over kor ofte
+        du fyller tanken på ulike dagar i veka."""
+        tk.Label(container, text=msg).grid(row=0, column=0)
+        tk.Button(container, text="Attende", command=container.destroy, font=self.parent.font_main).grid(row=1,
+                                                                                                         column=0)
+
         fig = Figure()
         ax = fig.add_subplot(111)
         explosions = [0.05 for i in counts.keys()]
@@ -984,7 +1007,7 @@ class Graphing(tk.Frame):
 
         canvas = FigureCanvasTkAgg(fig, container)
         canvas.show()
-        canvas.get_tk_widget().grid(row=0, column=0)
+        canvas.get_tk_widget().grid(row=2, column=0)
 
     def plot_day_price_variation(self):
         """
@@ -1025,6 +1048,19 @@ class Graphing(tk.Frame):
         container = tk.Toplevel(self)
         container.resizable(False, False)
 
+        # Make informative title
+        msg = """Dette diagrammet syner den gjennomsnittlege literprisen for kvar dag i veka.
+        Dersom du har to eller fleire fyllingar på ein dag, så syner diagrammet
+        også standardavviket for den aktuelle dagen. Standardavviket er ein
+        indikator variasjonen i datapunkta.
+        
+        Når du har registert nok data, så vil mest sannsynleg ei trend
+        verte synleg der du enkelt kan sjå kva for dag som vanlegvis
+        gir den lågast literprisen."""
+        tk.Label(container, text=msg).grid(row=0, column=0)
+        tk.Button(container, text="Attende", command=container.destroy, font=self.parent.font_main).grid(row=1,
+                                                                                                         column=0)
+
         fig = Figure()
         ax = fig.add_subplot(111)
         FS = 14
@@ -1043,7 +1079,7 @@ class Graphing(tk.Frame):
 
         for day, y, std, n in zip(xs, ys, stds, ns):
             ax.bar(day, y, yerr=std, capsize=5, ec="black", linewidth=2, color="skyblue", width=WIDTH)
-            ax.text(day, LOWER+0.5, f"n = {n}", horizontalalignment="center")
+            ax.text(day, LOWER+0.25, f"n = {n}", horizontalalignment="center")
 
         mean = sum(map(float, ys)) / len(list(map(float, ys)))
         x_mean = np.arange(-WIDTH/2, len(xs)-WIDTH/2, 0.01)
@@ -1054,7 +1090,7 @@ class Graphing(tk.Frame):
 
         canvas = FigureCanvasTkAgg(fig, container)
         canvas.show()
-        canvas.get_tk_widget().grid(row=0, column=0)
+        canvas.get_tk_widget().grid(row=2, column=0)
 
     def fill_report(self):
         """
@@ -1075,7 +1111,10 @@ class Graphing(tk.Frame):
         frame_right = tk.Frame(container)
         frame_right.grid(row=1, column=1)
 
-        tk.Label(frame_top, text="Samandrag", font=self.parent.font_heading).grid(row=0, column=0)
+        tk.Label(frame_top, text="Samandrag", font=self.parent.font_heading, bg="orange").grid(row=0, column=0)
+
+        # Button for closing report window
+        tk.Button(frame_top, text="Attende", font=self.parent.font_main, command=container.destroy).grid(row=1, column=0)
 
         # Total number of fills
         tk.Label(frame_left, text="Total antal fyllingar: ").grid(row=1, column=0, sticky=tk.W)
@@ -1126,6 +1165,11 @@ class Graphing(tk.Frame):
 
         tk.Label(frame_left, text="Gjennomsnittleg fyllfrekvens: ").grid(row=10, column=0, sticky=tk.W)
         tk.Label(frame_left, text=f"{avg_delta} dagar").grid(row=10, column=1, sticky=tk.E)
+
+        # Total CO2-fotavtrykk
+        footprint = self.myround(sum([entry["volume"] for entry in self.parent.data]) * 2500 / 1000000)
+        tk.Label(frame_left, text="Total CO2-fotavtrykk: ").grid(row=11, column=0, sticky=tk.W)
+        tk.Label(frame_left, text=f"{footprint} tonn CO2").grid(row=11, column=1, sticky=tk.E)
 
     def filter_filldata(self, year=datetime.MINYEAR, month=1, day=1):
         """
