@@ -39,7 +39,7 @@ class Gassy(tk.Tk):
 
         # Define the gas station options and bonus options
         self.stations = ["Circle K", "Shell", "Best", "Uno-X", "Esso", "OKQ8", "Ukjend"]
-        self.bonuses = ["Trumf", "Coop", "Ingen bonus"]
+        self.bonuses = ["Trumf", "Coop", "Ingen bonus", "Ukjend"]
 
         # Set default values for station and bonus
         self.bonus.set(self.bonuses[0])
@@ -247,7 +247,7 @@ class Settings(tk.Frame):
                        offvalue=False).grid(row=2, column=1, sticky=tk.W)
 
         # Entries
-        self.entry_backup = tk.Entry(self.frame, font=self.parent.font_main, width=60)
+        self.entry_backup = tk.Entry(self.frame, font=self.parent.font_main, width=30)
         self.entry_backup.grid(row=1, column=1, sticky=tk.W)
         self.entry_backup.insert(0, self.parent.current_settings["backup_file_path"])
 
@@ -888,7 +888,7 @@ class Graphing(tk.Frame):
                         fig.canvas.draw_idle()
 
         canvas = FigureCanvasTkAgg(fig, container)
-        canvas.show()
+        canvas.draw()
         canvas.get_tk_widget().grid(row=2, column=0)
         fig.canvas.mpl_connect("motion_notify_event", hover)
 
@@ -950,7 +950,7 @@ class Graphing(tk.Frame):
         ax.axis("equal")
 
         canvas = FigureCanvasTkAgg(fig, container)
-        canvas.show()
+        canvas.draw()
         canvas.get_tk_widget().grid(row=2, column=0)
 
     def plot_day_frequency(self):
@@ -1006,7 +1006,7 @@ class Graphing(tk.Frame):
         ax.axis("equal")
 
         canvas = FigureCanvasTkAgg(fig, container)
-        canvas.show()
+        canvas.draw()
         canvas.get_tk_widget().grid(row=2, column=0)
 
     def plot_day_price_variation(self):
@@ -1089,7 +1089,7 @@ class Graphing(tk.Frame):
         ax.legend(fontsize=FS)
 
         canvas = FigureCanvasTkAgg(fig, container)
-        canvas.show()
+        canvas.draw()
         canvas.get_tk_widget().grid(row=2, column=0)
 
     def fill_report(self):
