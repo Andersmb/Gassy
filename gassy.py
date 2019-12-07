@@ -1,18 +1,18 @@
 import tkinter as tk
-import tkinter.messagebox
-from tkinter import font
+from tkinter import messagebox, font, simpledialog
 from PIL import Image, ImageTk
 from collections import OrderedDict
-from time import sleep
 import matplotlib
 matplotlib.use("TkAgg")
-from matplotlib import pyplot as plt
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import numpy as np
 import os
 import json
 import datetime
+from copy import deepcopy
+
+# TODO Make user able to set the path to data file and path to backup file
 
 
 class Gassy(tk.Tk):
@@ -20,26 +20,51 @@ class Gassy(tk.Tk):
         tk.Tk.__init__(self, *args, **kwargs)
         self.columnconfigure(0, weight=1)
         self.startup = True
-        if "Anders" in os.path.expanduser("~"):
-            self.datafile = "/Users/Anders/Documents/github/Gassy/data.json"
-            self.backupfile = "/Users/Anders/Documents/github/Gassy/.data_backup.json"
-        elif "abr121" in os.path.expanduser("~"):
-            self.datafile = "/Users/abr121/Documents/github/Gassy/data.json"
-            self.backupfile = "/Users/abr121/Documents/github/Gassy/.data_backup.json"
+        self.name = "Gassy"
+        self.title(self.name)
 
+        # Set working directory
+        self.rootdir = os.path.dirname(os.path.abspath(__file__))
+
+        # Initialize variables
+        self.datafile = tk.StringVar()
+        self.backupfile = tk.StringVar()
+        self.bonus = tk.StringVar()
+        self.station = tk.StringVar()
+        self.automatic_backup = tk.BooleanVar()
+        self.settingsfile = tk.StringVar()
+
+        # Set default values
+        self.datafile.set(os.path.join(self.rootdir, "data.json"))
+        self.backupfile.set(os.path.join(os.path.expanduser("~"), self.name))
+        self.settingsfile.set(os.path.join(self.rootdir, "innstillingar.json"))
+
+        # Define the gas station options and bonus options
         self.stations = ["Circle K", "Shell", "Best", "Uno-X", "Esso", "OKQ8", "Ukjend"]
         self.bonuses = ["Trumf", "Coop", "Ingen bonus"]
 
-        self.bonus = tk.StringVar()
+        # Set default values for station and bonus
         self.bonus.set(self.bonuses[0])
-        self.station = tk.StringVar()
         self.station.set(self.stations[0])
 
+        # Define fonts
         self.font_heading = font.Font(family="Optima", size=20)
         self.font_main = font.Font(family="Optima", size=14)
 
-        self.load_data()
+        # Load data
+        self.data = self.load_data()
 
+        # Define default user settings
+        self.user_defaults = {
+            "backup_file_path": os.path.join(os.path.expanduser("~"), self.name),
+            "automatic_backup": True
+        }
+
+        # Load settings
+        self.current_settings = self.load_settings()
+        self.set_user_variables()
+
+        # Initialize the main window
         self.mainwindow = MainWindow(self)
         self.show_main(self)
         self.startup = False
@@ -70,11 +95,73 @@ class Gassy(tk.Tk):
         self.settings.grid(row=0, column=0)
 
     def load_data(self):
+        """
+        Attempt to open data file.
+
+        If file does not exist, then create empty file and return empty list.
+
+        json.decoder.JSONDecodeError is most likely raised if the data file is empty.
+        We just catch this and return an empty list.
+        :return: data list
+        """
         try:
-            with open(self.datafile) as f:
-                self.data = json.load(f)
+            with open(self.datafile.get()) as f:
+                return json.load(f)
         except IOError:
-            tk.messagebox.showwarning("Åtvaring", "Fyllingsdata ikkje funne!")
+            q = f"""Eg fann ikkje noko datafil. Vil du opprette ei
+            no med dette filnamnet? \n {self.datafile.get()}"""
+            answer = tk.messagebox.askquestion(self.name, q)
+            if answer == "yes":
+                # Touch data file
+                open(self.datafile.get(), "a").close()
+                return []
+            else:
+                return []
+        except json.decoder.JSONDecodeError:
+            return []
+
+    def load_settings(self):
+        """
+        Attempt to load the settings file from default path, and assign settings to variable.
+        If no file is found, assign defaults to variable and create empty file.
+        :return:
+        """
+        try:
+            with open(self.settingsfile.get()) as f:
+                return json.load(f)
+        except IOError:
+            print("Åtvaring. Inga fil for innstillingar funne. Bruker standardinnstillingar.")
+            return deepcopy(self.user_defaults)
+        except json.decoder.JSONDecodeError:
+            print("Tom fil for innstillingar funne. Bruker standardinnstillingar.")
+            return deepcopy((self.user_defaults))
+
+    def set_user_variables(self):
+        """
+        Set user variables to the current settings
+        :return:
+        """
+        self.backupfile.set(self.current_settings["backup_file_path"])
+        self.automatic_backup.set(self.current_settings["automatic_backup"])
+
+    def dump_settings(self):
+        with open(self.settingsfile.get(), "w") as f:
+            json.dump(self.current_settings, f, indent=4)
+
+    def make_backup(self):
+        """Copy data file to the backup location"""
+        filename = os.path.join(self.backupfile.get(), f"sikkerheitskopi_{datetime.datetime.now()}.json")
+
+        if os.path.isdir(self.current_settings["backup_file_path"]):
+            with open(filename, "w") as f:
+                json.dump(self.data, f, indent=4)
+        else:
+            msg = f"""Mappa der du vil lagre sikkerheitskopiane eksisterer ikkje. Vil du opprette ho? \n({
+            self.current_settings["backup_file_path"]})"""
+            if messagebox.askyesno(self.name, msg):
+                os.makedirs(self.current_settings["backup_file_path"])
+                with open(filename, "w") as f:
+                    json.dump(self.data, f, indent=4)
 
 
 class MainWindow(tk.Frame):
@@ -122,6 +209,13 @@ class MainWindow(tk.Frame):
                                 command=self.parent.destroy, fg="red", font=self.parent.font_main)
         button_exit.grid(row=6, column=0, sticky=tk.EW, padx=20, pady=5)
 
+        if len(self.parent.data) == 0:
+            tk.Label(self.frame_left, text="Datafila er tom :(",
+                     font=self.parent.font_main, fg="red").grid(row=1, column=0)
+        else:
+            tk.Label(self.frame_left, text=f"Du har datafil med {len(self.parent.data)} fyllingar :)",
+                     font=self.parent.font_main, fg="green").grid(row=1, column=0)
+
     def refresh_data(self):
         self.parent.load_data()
         image = ImageTk.PhotoImage(Image.open("frontpage_gassy_small_green.jpg"))
@@ -141,8 +235,41 @@ class Settings(tk.Frame):
         self.frame = tk.Frame(self)
         self.frame.grid(row=0, column=0)
 
-        tk.Label(self.frame, text="Innstillingar").grid(row=0, column=0)
-        tk.Button(self.frame, text="Tilbake", command=lambda: self.parent.show_main(self)).grid(row=1, column=0)
+        # Labels
+        tk.Label(self.frame, text="Innstillingar", font=self.parent.font_heading,
+                 bg="orange").grid(row=0, column=0, sticky=tk.W)
+        tk.Label(self.frame, text="Mappe for sikkerheitskopiar:", font=self.parent.font_main).grid(row=1, column=0, sticky=tk.E)
+        tk.Label(self.frame, text="Automatisk sikkerheitskopi \nnår du avsluttar Gassy?",
+                 font=self.parent.font_main).grid(row=2, column=0)
+
+        # Check buttons
+        tk.Checkbutton(self.frame, text="",
+                       variable=self.parent.automatic_backup,
+                       onvalue=True,
+                       offvalue=False).grid(row=2, column=1, sticky=tk.W)
+
+        # Entries
+        self.entry_backup = tk.Entry(self.frame, font=self.parent.font_main, width=60)
+        self.entry_backup.grid(row=1, column=1, sticky=tk.W)
+        self.entry_backup.insert(0, self.parent.current_settings["backup_file_path"])
+
+        # Buttons
+        tk.Button(self.frame, text="Ta sikkerheitskopi", command=self.parent.make_backup,
+                  font=self.parent.font_main).grid(row=1, column=2, sticky=tk.W)
+        tk.Button(self.frame, text="Lagre innstillingar", command=self.get_new_settings,
+                  font=self.parent.font_main).grid(row=3, column=0, sticky=tk.W)
+        tk.Button(self.frame, text="Attende", command=lambda: self.parent.show_main(self),
+                  font=self.parent.font_main).grid(row=4, column=0, sticky=tk.W)
+
+    def get_new_settings(self):
+        self.parent.current_settings["backup_file_path"] = self.entry_backup.get()
+        self.parent.current_settings["automatic_backup"] = self.parent.automatic_backup.get()
+
+        self.parent.set_user_variables()
+
+        self.parent.dump_settings()
+
+        tk.messagebox.showinfo(self.parent.name, f"Innstillingar lagra i {self.parent.settingsfile.get()}")
 
 
 class EditFills(tk.Frame):
@@ -345,12 +472,9 @@ class EditFills(tk.Frame):
             if entry["date"] != self.selected.get():
                 other_data.append(entry)
 
-        with open(self.parent.backupfile, "w") as backupdata:
-            json.dump(self.parent.data, backupdata, indent=4)
-
-        with open(self.parent.datafile, "w") as maindata:
+        with open(self.parent.datafile, "w") as f:
             other_data.append(updated_data)
-            json.dump(other_data, maindata, indent=4)
+            json.dump(other_data, f, indent=4)
 
         self.parent.load_data()
         tk.messagebox.showinfo("Gassy", "Fyllingsdata oppdatert!")
@@ -459,7 +583,8 @@ class AddNew(tk.Frame):
 
         self.grid(row=0, column=0, sticky=tk.NSEW)
 
-        tk.Label(self, text="Legg til ny fylling", font=self.parent.font_heading).grid(row=0, column=0)
+        tk.Label(self, text="Legg til ny fylling", font=self.parent.font_heading,
+                 bg="orange").grid(row=0, column=0)
         self.entry_volume = tk.Entry(self, font=self.parent.font_main)
         self.entry_price = tk.Entry(self, font=self.parent.font_main)
         self.entry_date = tk.Entry(self, font=self.parent.font_main)
@@ -528,14 +653,11 @@ class AddNew(tk.Frame):
         data["date"] = self.entry_date.get()
         data["comment"] = self.entry_comment.get()
 
-        with open(self.parent.backupfile, "w") as backupdata:
-            json.dump(self.parent.data, backupdata, indent=4)
-
-        with open(self.parent.datafile, "w") as maindata:
+        with open(self.parent.datafile.get(), "w") as f:
             self.parent.data.append(data)
-            json.dump(self.parent.data, maindata, indent=4)
+            json.dump(self.parent.data, f, indent=4)
 
-        tk.messagebox.showinfo("Gassy", "Ny fylling lagt til!")
+        tk.messagebox.showinfo(self.parent.name, "Ny fylling lagt til!")
 
     def sanity_check(self):
         """
@@ -640,7 +762,6 @@ class InfoBox(tk.Toplevel):
         Custom pop-up window for displaying information, similar to tk.messagebox.showinfo,
         used for displaying help messages.
 
-        :param parent: parent widget
         :param msg: string containing the info message to be shown in the InfoBox
         :param image: PhotoImage object used to decorate left side of InfoBox
         """
@@ -692,8 +813,8 @@ class Graphing(tk.Frame):
         label_image.image = image
         label_image.grid(row=0, column=0)
 
-        label_title = tk.Label(frame_right, text="Analyse av fyllingsdata", font=self.parent.font_heading)
-        label_title.grid(row=0, column=0, sticky=tk.N)
+        tk.Label(frame_right, text="Analyse av fyllingsdata", font=self.parent.font_heading,
+                 bg="orange").grid(row=0, column=0, sticky=tk.N)
 
         tk.Button(frame_right, text="Attende",
                   command=lambda: self.parent.show_main(self),
@@ -912,8 +1033,8 @@ class Graphing(tk.Frame):
         ys = [prices[day]["mean"] for day in xs]
         stds = [prices[day]["std"] for day in xs]
         ns = [len(prices[day]["data"]) for day in xs]
-        UPPER = 18
-        LOWER = 14
+        UPPER = max(ys) + 0.5
+        LOWER = min(ys) - 0.5
         WIDTH = 0.8
         ax.set_ylim(LOWER, UPPER)
 
@@ -1167,7 +1288,11 @@ def edit_help(index):
         return InfoBox(msg, image)
 
 
-app = Gassy()
-app.resizable(False, False)
-app.title("Gassy")
-app.mainloop()
+if __name__ == "__main__":
+    app = Gassy()
+    app.resizable(False, False)
+    app.title(app.name)
+    app.mainloop()
+
+    if app.automatic_backup.get():
+        app.make_backup()
