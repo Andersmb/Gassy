@@ -211,8 +211,12 @@ class MainWindow(tk.Frame):
             tk.Label(self.frame_left, text="Datafila di er tom :(",
                      font=self.parent.font_main, fg="red").grid(row=1, column=0)
         else:
-            tk.Label(self.frame_left, text=f"Datafila di har {len(self.parent.data)} fyllingar :)",
-                     font=self.parent.font_main, fg="green").grid(row=1, column=0)
+            if len(self.parent.data) > 1:
+                tk.Label(self.frame_left, text=f"Datafila di har {len(self.parent.data)} fyllingar :)",
+                         font=self.parent.font_main, fg="green").grid(row=1, column=0)
+            else:
+                tk.Label(self.frame_left, text=f"Datafila di har {len(self.parent.data)} fylling :)",
+                         font=self.parent.font_main, fg="green").grid(row=1, column=0)
 
     def refresh_data(self):
         self.parent.data = self.parent.load_data()
