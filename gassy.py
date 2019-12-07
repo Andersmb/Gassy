@@ -83,6 +83,9 @@ class Gassy(tk.Tk):
         self.editfills.grid(row=0, column=0)
 
     def show_graphing(self):
+        if len(self.data) == 0:
+            msg = """Du har ikkje registrert fyllingar endå, så denne funksjonaliteten vil ikkje fungere skikkeleg."""
+            messagebox.showwarning(self.name, msg)
         self.graphing = Graphing(self)
         self.mainwindow.grid_forget()
         self.graphing.grid(row=0, column=0)
