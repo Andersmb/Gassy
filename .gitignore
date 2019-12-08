@@ -196,3 +196,12 @@ dmypy.json
 .pyre/
 
 # End of https://www.gitignore.io/api/python,pycharm
+
+# Virtual Environment
+venv/bin/*
+venv/lib/*
+venv/include/*
+venv/pyvenv.cfg
+
+# Documentation
+documentation/*
