@@ -208,3 +208,6 @@ documentation/*
 
 # DS Store
 .DS_Store
+
+# Data file
+data.json
