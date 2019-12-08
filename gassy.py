@@ -33,7 +33,7 @@ class Gassy(tk.Tk):
         self.settingsfile = tk.StringVar()
 
         # Set default values
-        self.datafile.set(os.path.join(self.rootdir, "data.json"))
+        self.datafile.set(os.path.join(self.rootdir, "fyllingsdata.json"))
         self.backupfile.set(os.path.join(os.path.expanduser("~"), self.name))
         self.settingsfile.set(os.path.join(self.rootdir, "innstillingar.json"))
 
