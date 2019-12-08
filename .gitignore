@@ -205,3 +205,6 @@ venv/pyvenv.cfg
 
 # Documentation
 documentation/*
+
+# DS Store
+.DS_Store
