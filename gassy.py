@@ -13,6 +13,8 @@ import datetime
 from copy import deepcopy
 import smtplib
 
+DEV = True
+
 
 class Gassy(tk.Tk):
     def __init__(self, *args, **kwargs):
@@ -35,7 +37,7 @@ class Gassy(tk.Tk):
 
         # Set default values
         self.datafile.set(os.path.join(self.rootdir, "fyllingsdata.json"))
-        self.backupfile.set(os.path.join(os.path.expanduser("~"), self.name))
+        self.backupfile.set(os.path.join(os.path.expanduser("~"), self.name+"-DEV" if DEV else self.name))
         self.settingsfile.set(os.path.join(self.rootdir, "innstillingar.json"))
 
         # Define the gas station options and bonus options
@@ -55,7 +57,7 @@ class Gassy(tk.Tk):
 
         # Define default user settings
         self.user_defaults = {
-            "backup_file_path": os.path.join(os.path.expanduser("~"), self.name),
+            "backup_file_path": os.path.join(os.path.expanduser("~"), self.name+"-DEV" if DEV else self.name),
             "automatic_backup": True
         }
 
