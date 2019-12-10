@@ -13,7 +13,7 @@ import datetime
 from copy import deepcopy
 import smtplib
 
-DEV = True
+DEV = False
 
 
 class Gassy(tk.Tk):
