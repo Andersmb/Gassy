@@ -11,6 +11,7 @@ import os
 import json
 import datetime
 from copy import deepcopy
+import smtplib
 
 
 class Gassy(tk.Tk):
@@ -81,6 +82,11 @@ class Gassy(tk.Tk):
         self.editfills = EditFills(self)
         self.mainwindow.grid_forget()
         self.editfills.grid(row=0, column=0)
+
+    def show_feedback(self):
+        self.feedback = Feedback(self)
+        self.mainwindow.grid_forget()
+        self.feedback.grid(row=0, column=0)
 
     def show_graphing(self):
         if len(self.data) == 0:
@@ -183,32 +189,45 @@ class MainWindow(tk.Frame):
         label.image = image
         label.grid(row=0, column=0, sticky=tk.E)
 
-        label_title = tk.Label(frame_right, text="Velkommen til Gassy!", bg="orange", font=self.parent.font_heading)
-        label_title.grid(row=0, column=0, sticky=tk.EW, padx=20, pady=10)
+        tk.Label(frame_right,
+                 text="Velkommen til Gassy!",
+                 bg="orange",
+                 font=self.parent.font_heading).grid(row=0, column=0, sticky=tk.EW, padx=20, pady=10)
 
-        button_add_new_fill = tk.Button(frame_right, text="Ny fylling...",
-                                        command=self.parent.show_addnew, font=self.parent.font_main)
-        button_add_new_fill.grid(row=1, column=0, sticky=tk.EW, padx=20, pady=5)
+        tk.Button(frame_right,
+                  text="Ny fylling...",
+                  command=self.parent.show_addnew,
+                  font=self.parent.font_main).grid(row=1, column=0, sticky=tk.EW, padx=20, pady=5)
 
-        button_edit_fills = tk.Button(frame_right, text="Rediger fyllingar...",
-                                      command=self.parent.show_editfills, font=self.parent.font_main)
-        button_edit_fills.grid(row=2, column=0, sticky=tk.EW, padx=20, pady=5)
+        tk.Button(frame_right,
+                  text="Rediger fyllingar...",
+                  command=self.parent.show_editfills,
+                  font=self.parent.font_main).grid(row=2, column=0, sticky=tk.EW, padx=20, pady=5)
 
-        button_graphing = tk.Button(frame_right, text="Analysar...",
-                                    command=self.parent.show_graphing, font=self.parent.font_main)
-        button_graphing.grid(row=3, column=0, sticky=tk.EW, padx=20, pady=5)
+        tk.Button(frame_right,
+                  text="Analysar...",
+                  command=self.parent.show_graphing,
+                  font=self.parent.font_main).grid(row=3, column=0, sticky=tk.EW, padx=20, pady=5)
 
-        button_refresh_data = tk.Button(frame_right, text="Oppdater fyllingsdata",
-                                        command=self.refresh_data, font=self.parent.font_main)
-        button_refresh_data.grid(row=4, column=0, sticky=tk.EW, padx=20, pady=5)
+        tk.Button(frame_right,
+                  text="Oppdater fyllingsdata",
+                  command=self.refresh_data,
+                  font=self.parent.font_main).grid(row=4, column=0, sticky=tk.EW, padx=20, pady=5)
 
-        button_settings = tk.Button(frame_right, text="Innstillingar",
-                                    command=self.parent.show_settings, font=self.parent.font_main)
-        button_settings.grid(row=5, column=0, sticky=tk.EW, padx=20, pady=5)
+        tk.Button(frame_right,
+                  text="Innstillingar",
+                  command=self.parent.show_settings,
+                  font=self.parent.font_main).grid(row=5, column=0, sticky=tk.EW, padx=20, pady=5)
 
-        button_exit = tk.Button(frame_right, text="Avslutt",
-                                command=self.parent.destroy, fg="red", font=self.parent.font_main)
-        button_exit.grid(row=6, column=0, sticky=tk.EW, padx=20, pady=5)
+        tk.Button(frame_right,
+                  text="Ris og ros",
+                  command=self.parent.show_feedback,
+                  font=self.parent.font_main).grid(row=6, column=0, sticky=tk.EW, padx=20, pady=5)
+
+        tk.Button(frame_right,
+                  text="Avslutt",
+                  command=self.parent.destroy,
+                  fg="red", font=self.parent.font_main).grid(row=7, column=0, sticky=tk.EW, padx=20, pady=5)
 
         if len(self.parent.data) == 0:
             tk.Label(self.frame_left, text="Datafila di er tom :(",
@@ -228,6 +247,69 @@ class MainWindow(tk.Frame):
         label.image = image
         label.grid(row=0, column=0, sticky=tk.E)
         self.after(500, lambda: self.__init__(self.parent))
+
+
+class Feedback(tk.Frame):
+    def __init__(self, parent):
+        tk.Frame.__init__(self)
+        self.parent = parent
+        self.grid(row=0, column=0, sticky=tk.NSEW)
+
+        self.mail = "gassy.feedback@gmail.com"
+        self.pwd = "Sd!geZnIIWPQQ4BrhkLY"
+
+        # Define subject categories
+        placeholder = "Vel emne              "
+        self.subject_options = ["Ny funksjon           ",
+                                "Feil i koden          ",
+                                "Ros                   ",
+                                "Anna                  "]
+        self.subject = tk.StringVar()
+        self.subject.set(placeholder)  # Default is a placeholder
+
+        # Title
+        tk.Label(self,
+                 text="Gi tilbakemelding",
+                 font=self.parent.font_heading,
+                 bg="orange").grid(row=0, column=0, sticky=tk.W, padx=10, pady=5)
+
+        # Choose subject
+        tk.OptionMenu(self, self.subject, *self.subject_options).grid(row=1, sticky=tk.W, padx=10, pady=5)
+
+        # Main body
+        tk.Label(self, text="Skriv di tilbakemelding her").grid(row=2, column=0, sticky=tk.W, padx=10, pady=5)
+
+        self.body = tk.Text(self, font=self.parent.font_main, relief=tk.GROOVE)
+        self.body.grid(row=3, column=0, sticky=tk.W, padx=10, pady=5)
+        self.body.focus_set()
+
+        tk.Button(self,
+                  text="Send tilbakemelding",
+                  font=self.parent.font_main,
+                  command=self.send_feedback).grid(row=4, column=0, sticky=tk.W, padx=10, pady=5)
+        tk.Button(self,
+                  text="Attende",
+                  font=self.parent.font_main,
+                  command=lambda: self.parent.show_main(self)).grid(row=5, column=0, sticky=tk.W, padx=10, pady=5)
+
+    def send_feedback(self):
+        # Set up connection
+        server = smtplib.SMTP("smtp.gmail.com", 587)
+        server.ehlo()
+
+        # encrypt
+        server.starttls()
+
+        # Log in
+        server.login(self.mail, self.pwd)
+
+        msg = f"""Subject: {self.subject.get().strip()}\n\n{self.body.get("1.0", tk.END)}"""
+
+        if not self.body.get("1.0", tk.END).strip() == "":
+            server.sendmail(self.mail, self.mail, msg)
+        else:
+            tk.messagebox.showwarning(self.parent.name, "Du har ikkje skrive noko i tekstboksen.")
+
 
 
 class Settings(tk.Frame):
