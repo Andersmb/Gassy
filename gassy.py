@@ -3,6 +3,7 @@ from tkinter import messagebox, font
 from PIL import Image, ImageTk
 from collections import OrderedDict
 import matplotlib
+
 matplotlib.use("TkAgg")
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -13,7 +14,7 @@ import datetime
 from copy import deepcopy
 import smtplib
 
-DEV = False
+DEV = True
 
 
 class Gassy(tk.Tk):
@@ -37,7 +38,7 @@ class Gassy(tk.Tk):
 
         # Set default values
         self.datafile.set(os.path.join(self.rootdir, "fyllingsdata.json"))
-        self.backupfile.set(os.path.join(os.path.expanduser("~"), self.name+"-DEV" if DEV else self.name))
+        self.backupfile.set(os.path.join(os.path.expanduser("~"), self.name + "-DEV" if DEV else self.name))
         self.settingsfile.set(os.path.join(self.rootdir, "innstillingar.json"))
 
         # Define the gas station options and bonus options
@@ -57,7 +58,7 @@ class Gassy(tk.Tk):
 
         # Define default user settings
         self.user_defaults = {
-            "backup_file_path": os.path.join(os.path.expanduser("~"), self.name+"-DEV" if DEV else self.name),
+            "backup_file_path": os.path.join(os.path.expanduser("~"), self.name + "-DEV" if DEV else self.name),
             "automatic_backup": True
         }
 
@@ -186,7 +187,7 @@ class MainWindow(tk.Frame):
         self.frame_left.grid(row=0, column=0)
         frame_right.grid(row=0, column=1)
 
-        image = ImageTk.PhotoImage(Image.open("frontpage_gassy_small.jpg"))
+        image = ImageTk.PhotoImage(Image.open(os.path.join(self.parent.rootdir, "Bilete", "frontpage_gassy_small.jpg")))
         label = tk.Label(self.frame_left, image=image)
         label.image = image
         label.grid(row=0, column=0, sticky=tk.E)
@@ -244,7 +245,7 @@ class MainWindow(tk.Frame):
 
     def refresh_data(self):
         self.parent.data = self.parent.load_data()
-        image = ImageTk.PhotoImage(Image.open("frontpage_gassy_small_green.jpg"))
+        image = ImageTk.PhotoImage(Image.open(os.path.join(self.parent.rootdir, "frontpage_gassy_small_green.jpg")))
         label = tk.Label(self.frame_left, image=image)
         label.image = image
         label.grid(row=0, column=0, sticky=tk.E)
@@ -314,7 +315,6 @@ class Feedback(tk.Frame):
             tk.messagebox.showwarning(self.parent.name, "Du har ikkje skrive noko i tekstboksen.")
 
 
-
 class Settings(tk.Frame):
     def __init__(self, parent):
         tk.Frame.__init__(self)
@@ -328,7 +328,8 @@ class Settings(tk.Frame):
         # Labels
         tk.Label(self.frame, text="Innstillingar", font=self.parent.font_heading,
                  bg="orange").grid(row=0, column=0, sticky=tk.W)
-        tk.Label(self.frame, text="Mappe for sikkerheitskopiar:", font=self.parent.font_main).grid(row=1, column=0, sticky=tk.E)
+        tk.Label(self.frame, text="Mappe for sikkerheitskopiar:", font=self.parent.font_main).grid(row=1, column=0,
+                                                                                                   sticky=tk.E)
         tk.Label(self.frame, text="Automatisk sikkerheitskopi \nnår du avsluttar Gassy?",
                  font=self.parent.font_main).grid(row=2, column=0)
 
@@ -395,7 +396,7 @@ class EditFills(tk.Frame):
         self.frame_dates = tk.Frame(self.canvas)
 
         # Create canvas window to hold the date frame
-        self.canvas.create_window((0,0), window=self.frame_dates, anchor=tk.NW)
+        self.canvas.create_window((0, 0), window=self.frame_dates, anchor=tk.NW)
 
         self.frame_dates.bind("<Configure>", self.update_scrollregion)
 
@@ -442,12 +443,12 @@ class EditFills(tk.Frame):
 
         for row in range(7):
             tk.Button(self.frame_right, text="Hjelp",
-                      command=lambda index=row: edit_help(index+1),
-                      font=self.parent.font_main).grid(row=row+1, column=2, pady=5, padx=5)
+                      command=lambda index=row: edit_help(index + 1, self.parent.rootdir),
+                      font=self.parent.font_main).grid(row=row + 1, column=2, pady=5, padx=5)
 
         tk.Button(self.frame_right, text="Attende",
                   command=self.close,
-                  font=self.parent.font_main).grid(row=8, column = 1, sticky=tk.W, pady=5, padx=5)
+                  font=self.parent.font_main).grid(row=8, column=1, sticky=tk.W, pady=5, padx=5)
         tk.Button(self.frame_right, text="Oppdater fylling",
                   command=self.update_fill_entry,
                   font=self.parent.font_main).grid(row=8, column=0, pady=5, padx=5)
@@ -665,7 +666,7 @@ class EditFills(tk.Frame):
                     DATE_EDIT = True
 
         except ValueError:
-           self.label_date["fg"] = "red"
+            self.label_date["fg"] = "red"
 
         self.after(200, self.sanity_check)
 
@@ -716,8 +717,8 @@ class AddNew(tk.Frame):
         option_station.grid(row=7, column=1, sticky=tk.W)
 
         for row in range(7):
-            tk.Button(self, text="Hjelp", command=lambda index=row: edit_help(index+1),
-                      font=self.parent.font_main).grid(row=row+1, column=2)
+            tk.Button(self, text="Hjelp", command=lambda index=row: edit_help(index + 1, self.parent.rootdir),
+                      font=self.parent.font_main).grid(row=row + 1, column=2)
 
         tk.Button(self, text="Lagre", command=self.append_new_fill,
                   font=self.parent.font_main).grid(row=8, column=0, sticky=tk.W)
@@ -845,7 +846,7 @@ class AddNew(tk.Frame):
                     DATE = True
 
         except ValueError:
-           self.label_date["fg"] = "red"
+            self.label_date["fg"] = "red"
 
         self.after(200, self.sanity_check)
 
@@ -902,7 +903,7 @@ class Graphing(tk.Frame):
         frame_left.grid(row=0, column=0)
         frame_right.grid(row=0, column=1)
 
-        image = ImageTk.PhotoImage(Image.open("graphing.jpg"))
+        image = ImageTk.PhotoImage(Image.open(os.path.join(self.parent.rootdir, "Bilete", "graphing.jpg")))
         label_image = tk.Label(frame_left, image=image)
         label_image.image = image
         label_image.grid(row=0, column=0)
@@ -946,16 +947,17 @@ class Graphing(tk.Frame):
         og du kan sjå korleis literprisen har variert. Hold musepeikaren over 
         datapunktene for å vise datoen for fyllinga."""
         tk.Label(container, text=msg).grid(row=0, column=0)
-        tk.Button(container, text="Attende", command=container.destroy, font=self.parent.font_main).grid(row=1, column=0)
+        tk.Button(container, text="Attende", command=container.destroy, font=self.parent.font_main).grid(row=1,
+                                                                                                         column=0)
 
         # Make dummy annotation
         annot = ax.annotate("",
-                            xy=(10,15),
-                            xytext=(20,0),
+                            xy=(10, 15),
+                            xytext=(20, 0),
                             textcoords="offset points",
                             bbox=dict(boxstyle="round", fc="skyblue"),
                             arrowprops=dict(arrowstyle="->"))
-        #print(ax.get_xlim())
+        # print(ax.get_xlim())
         annot.get_bbox_patch().set_alpha(0.4)
         annot.set_visible(False)
 
@@ -1006,7 +1008,6 @@ class Graphing(tk.Frame):
 
         ax.grid()
         ax.legend(fontsize=FS)
-
 
     def plot_station_frequency(self):
         """
@@ -1145,7 +1146,7 @@ class Graphing(tk.Frame):
         Dersom du har to eller fleire fyllingar på ein dag, så syner diagrammet
         også standardavviket for den aktuelle dagen. Standardavviket er ein
         indikator variasjonen i datapunkta.
-        
+
         Når du har registert nok data, så vil mest sannsynleg ei trend
         verte synleg der du enkelt kan sjå kva for dag som vanlegvis
         gir den lågast literprisen."""
@@ -1171,10 +1172,10 @@ class Graphing(tk.Frame):
 
         for day, y, std, n in zip(xs, ys, stds, ns):
             ax.bar(day, y, yerr=std, capsize=5, ec="black", linewidth=2, color="skyblue", width=WIDTH)
-            ax.text(day, LOWER+0.25, f"n = {n}", horizontalalignment="center")
+            ax.text(day, LOWER + 0.25, f"n = {n}", horizontalalignment="center")
 
         mean = sum(map(float, ys)) / len(list(map(float, ys)))
-        x_mean = np.arange(-WIDTH/2, len(xs)-WIDTH/2, 0.01)
+        x_mean = np.arange(-WIDTH / 2, len(xs) - WIDTH / 2, 0.01)
         y_mean = [mean for x in x_mean]
         ax.plot(x_mean, y_mean, linestyle="--", color="black", label="Gjennomsnitt")
 
@@ -1206,7 +1207,8 @@ class Graphing(tk.Frame):
         tk.Label(frame_top, text="Samandrag", font=self.parent.font_heading, bg="orange").grid(row=0, column=0)
 
         # Button for closing report window
-        tk.Button(frame_top, text="Attende", font=self.parent.font_main, command=container.destroy).grid(row=1, column=0)
+        tk.Button(frame_top, text="Attende", font=self.parent.font_main, command=container.destroy).grid(row=1,
+                                                                                                         column=0)
 
         # Total number of fills
         tk.Label(frame_left, text="Total antal fyllingar: ").grid(row=1, column=0, sticky=tk.W)
@@ -1228,7 +1230,8 @@ class Graphing(tk.Frame):
 
         # Average price
         tk.Label(frame_left, text="Gjennomsnittleg literpris: ").grid(row=5, column=0, sticky=tk.W)
-        tk.Label(frame_left, text=f"{self.myround(sum(prices) / len(prices))} Kroner").grid(row=5, column=1, sticky=tk.E)
+        tk.Label(frame_left, text=f"{self.myround(sum(prices) / len(prices))} Kroner").grid(row=5, column=1,
+                                                                                            sticky=tk.E)
 
         # Lowest volume
         volumes = [entry["volume"] for entry in data]
@@ -1241,7 +1244,8 @@ class Graphing(tk.Frame):
 
         # Average volume
         tk.Label(frame_left, text="Gjennomsnittleg volum: ").grid(row=8, column=0, sticky=tk.W)
-        tk.Label(frame_left, text=f"{self.myround(sum(volumes) / len(volumes))} liter").grid(row=8, column=1, sticky=tk.E)
+        tk.Label(frame_left, text=f"{self.myround(sum(volumes) / len(volumes))} liter").grid(row=8, column=1,
+                                                                                             sticky=tk.E)
 
         # Sparepotensiale. Total kostnad dersom alle fyllingane var gjort ved lågast registrerte literpris
         min_price = min(prices)
@@ -1252,7 +1256,7 @@ class Graphing(tk.Frame):
 
         # Gjennomsnittleg antal dagar mellom fyllingar
         dates = sorted([datefromstring(entry["date"]) for entry in data])
-        dates_delta = [dates[i+1] - dates[i] for i in range(len(dates)-1)]
+        dates_delta = [dates[i + 1] - dates[i] for i in range(len(dates) - 1)]
         avg_delta = self.myround(sum([delta.days for delta in dates_delta]) / len(dates_delta))
 
         tk.Label(frame_left, text="Gjennomsnittleg fyllfrekvens: ").grid(row=10, column=0, sticky=tk.W)
@@ -1271,7 +1275,8 @@ class Graphing(tk.Frame):
         :param day: int
         :return: list, filtered to include only data starting from provided start time
         """
-        return list(filter(lambda fill:  datefromstring(fill["date"]) >= datetime.date(year, month, day), self.parent.data))
+        return list(
+            filter(lambda fill: datefromstring(fill["date"]) >= datetime.date(year, month, day), self.parent.data))
 
     @staticmethod
     def myround(n, k=2):
@@ -1320,7 +1325,7 @@ def datefromstring(str):
     return datetime.date(*list(map(int, str.split("-"))))
 
 
-def edit_help(index):
+def edit_help(index, rootdir):
     """
     Display help messages for adding or editing fill data.
     :param index: the index of the tk.Button that is put into the EditFills window.
@@ -1341,7 +1346,7 @@ def edit_help(index):
         Feil: 45.223
         """
 
-        image = ImageTk.PhotoImage(Image.open("help_volum.jpg"))
+        image = ImageTk.PhotoImage(Image.open(os.path.join(rootdir, "Bilete", "help_volum.jpg")))
         return InfoBox(msg, image)
     elif index == 2:
         msg = """
@@ -1357,7 +1362,7 @@ def edit_help(index):
         Feil: 16.9
         Feil: 16.991
         """
-        image = ImageTk.PhotoImage(Image.open("help_price.jpg"))
+        image = ImageTk.PhotoImage(Image.open(os.path.join(rootdir, "Bilete", "help_price.jpg")))
         return InfoBox(msg, image)
     elif index == 3:
         msg = """
@@ -1370,7 +1375,7 @@ def edit_help(index):
         Feil: 7. januar 1986
         Feil: 1986-1-7
         """
-        image = ImageTk.PhotoImage(Image.open("help_date.jpg"))
+        image = ImageTk.PhotoImage(Image.open(os.path.join(rootdir, "Bilete", "help_date.jpg")))
         return InfoBox(msg, image)
     elif index == 4:
         msg = """
@@ -1386,7 +1391,7 @@ def edit_help(index):
         Feil: 23:4
         Feil: 23:411
         """
-        image = ImageTk.PhotoImage(Image.open("help_time.jpg"))
+        image = ImageTk.PhotoImage(Image.open(os.path.join(rootdir, "Bilete", "help_time.jpg")))
         return InfoBox(msg, image)
     elif index == 5:
         msg = """
@@ -1396,7 +1401,7 @@ def edit_help(index):
         for å halde styr på drivstofforbruket
         for ein lang køyretur.
         """
-        image = ImageTk.PhotoImage(Image.open("help_station.jpg"))
+        image = ImageTk.PhotoImage(Image.open(os.path.join(rootdir, "Bilete", "help_station.jpg")))
         return InfoBox(msg, image)
     elif index == 6:
         msg = """
@@ -1408,7 +1413,7 @@ def edit_help(index):
         kompatible med somme stasjonar. Pass
         på at du veljer korrekte kombinasjonar.
         """
-        image = ImageTk.PhotoImage(Image.open("help_bonus.jpg"))
+        image = ImageTk.PhotoImage(Image.open(os.path.join(rootdir, "Bilete", "help_bonus.jpg")))
         return InfoBox(msg, image)
 
     elif index == 7:
@@ -1420,7 +1425,7 @@ def edit_help(index):
 
         anders.brakestad@gmail.com
         """
-        image = ImageTk.PhotoImage(Image.open("help_station.jpg"))
+        image = ImageTk.PhotoImage(Image.open(os.path.join(rootdir, "Bilete", "help_station.jpg")))
         return InfoBox(msg, image)
 
 
