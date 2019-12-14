@@ -19,27 +19,24 @@ DEV = True
 
 class Gassy(tk.Tk):
     def __init__(self, *args, **kwargs):
+        self.dbug("STARTING GASSY", h=True)
         tk.Tk.__init__(self, *args, **kwargs)
         self.columnconfigure(0, weight=1)
         self.startup = True
-        self.name = "Gassy"
+        self.name = "Gassy-DEV" if DEV else "Gassy"
         self.title(self.name)
 
-        # Set working directory
+        # Set working directory and key dirs and files
         self.rootdir = os.path.dirname(os.path.abspath(__file__))
+        self.d_project = os.path.join(os.path.expanduser("~"), self.name)
+        self.d_backups = os.path.join(self.d_project, "Sikkerheitskopiar")
+        self.f_settings = os.path.join(self.d_project, "Innstillingar.json")
+        self.f_data = os.path.join(self.d_project, "Fyllingsdata.json")
 
         # Initialize variables
-        self.datafile = tk.StringVar()
-        self.backupfile = tk.StringVar()
         self.bonus = tk.StringVar()
         self.station = tk.StringVar()
         self.automatic_backup = tk.BooleanVar()
-        self.settingsfile = tk.StringVar()
-
-        # Set default values
-        self.datafile.set(os.path.join(self.rootdir, "fyllingsdata.json"))
-        self.backupfile.set(os.path.join(os.path.expanduser("~"), self.name + "-DEV" if DEV else self.name))
-        self.settingsfile.set(os.path.join(self.rootdir, "innstillingar.json"))
 
         # Define the gas station options and bonus options
         self.stations = ["Circle K", "Shell", "Best", "Uno-X", "Esso", "OKQ8", "Ukjend"]
@@ -53,18 +50,17 @@ class Gassy(tk.Tk):
         self.font_heading = font.Font(family="Optima", size=20)
         self.font_main = font.Font(family="Optima", size=14)
 
-        # Load data
-        self.data = self.load_data()
-
         # Define default user settings
-        self.user_defaults = {
-            "backup_file_path": os.path.join(os.path.expanduser("~"), self.name + "-DEV" if DEV else self.name),
-            "automatic_backup": True
+        self.defaults = {
+            "automatic_backup": False
         }
 
         # Load settings
         self.current_settings = self.load_settings()
-        self.set_user_variables()
+        self.set_system_variables()
+
+        # Load data
+        self.data = self.load_data()
 
         # Initialize the main window
         self.mainwindow = MainWindow(self)
@@ -114,20 +110,20 @@ class Gassy(tk.Tk):
         We just catch this and return an empty list.
         :return: data list
         """
+        self.dbug("LOADING DATA", h=True)
         try:
-            with open(self.datafile.get()) as f:
-                return json.load(f)
+            self.dbug(f"Attempting to load {self.f_data}")
+            with open(self.f_data) as f:
+                d = json.load(f)
+                self.dbug(f"...successfully loaded datafile with {len(d)} fills.")
+                return d
         except IOError:
-            q = f"""Eg fann ikkje noko datafil. Vil du opprette ei
-            no med dette filnamnet? \n {self.datafile.get()}"""
-            answer = tk.messagebox.askquestion(self.name, q)
-            if answer == "yes":
-                # Touch data file
-                open(self.datafile.get(), "a").close()
-                return []
-            else:
-                return []
+            self.dbug("...data file not found.")
+            open(self.f_data, "a").close()
+            self.dbug("...new data file created.")
+            return []
         except json.decoder.JSONDecodeError:
+            self.dbug("...found empty data file.")
             return []
 
     def load_settings(self):
@@ -136,48 +132,87 @@ class Gassy(tk.Tk):
         If no file is found, assign defaults to variable and create empty file.
         :return:
         """
-        try:
-            with open(self.settingsfile.get()) as f:
-                return json.load(f)
-        except IOError:
-            print("Åtvaring. Inga fil for innstillingar funne. Bruker standardinnstillingar.")
-            return deepcopy(self.user_defaults)
-        except json.decoder.JSONDecodeError:
-            print("Tom fil for innstillingar funne. Bruker standardinnstillingar.")
-            return deepcopy((self.user_defaults))
+        self.dbug("LOADING SETTINGS", h=True)
+        self.dbug(f"Checking if default project dir exists... ({self.d_project})")
+        if not os.path.isdir(self.d_project):
+            self.dbug("...it does not exist.")
+            os.makedirs(self.d_project)
+            self.dbug("...created default project dir.")
+        else:
+            self.dbug("... it exists.")
 
-    def set_user_variables(self):
+        try:
+            self.dbug("Attempting to read settings file...")
+            with open(self.f_settings) as f:
+                settings = json.load(f)
+                self.dbug("...successfully read settings.")
+                return settings
+
+        except IOError:
+            self.dbug("...settings file not found. Using defaults.")
+            open(self.f_settings, "w").close()
+            self.dbug(f"...created settings file: {self.f_settings}")
+            return deepcopy(self.defaults)
+
+        except json.decoder.JSONDecodeError:
+            self.dbug("...error de-serializing JSON. Using defaults")
+            return deepcopy(self.defaults)
+
+    def set_system_variables(self):
         """
         Set user variables to the current settings
         :return:
         """
-        self.backupfile.set(self.current_settings["backup_file_path"])
+        self.dbug("SETTING SYSTEM VARIABLES", h=True)
+
         self.automatic_backup.set(self.current_settings["automatic_backup"])
+        self.dbug(f"Automatic backup: {self.automatic_backup.get()}")
 
     def dump_settings(self):
-        with open(self.settingsfile.get(), "w") as f:
-            json.dump(self.current_settings, f, indent=4)
+        self.dbug(f"DUMPING SETTINGS TO {self.f_settings}", h=True)
+        try:
+            with open(self.f_settings, "w") as f:
+                json.dump(self.current_settings, f, indent=4)
+        except FileNotFoundError:
+            if not os.path.isdir(self.d_project):
+                msg = f"{self.name} si prosjektmappe ({self.d_project})finns ikkje. Vil du opprette ho?"
+                if tk.messagebox.askyesno(self.name, msg):
+                    os.makedirs(self.d_project)
+            else:
+                tk.messagebox.showerror(self.name, "Ukjend feil, venlegst rapporter i detalj korleis denne meldinga oppstod.")
 
-    def make_backup(self):
+    def dbug(self, s, h=False):
+        if h:
+            print(f"[{current_time()}] ---------------------------------------")
+        if s is not None and DEV:
+            print(f"[{current_time()}] {s}")
+
+    def backup(self):
         """Copy data file to the backup location"""
-        filename = os.path.join(self.backupfile.get(), f"sikkerheitskopi_{datetime.datetime.now()}.json")
+        self.dbug("PREPARING BACKUP...", h=True)
+        filename = os.path.join(self.d_backups, f"sikkerheitskopi_{current_date()}_{len(self.data)}fyllingar.json")
 
-        if os.path.isdir(self.current_settings["backup_file_path"]):
+        if os.path.isdir(self.d_backups):
             with open(filename, "w") as f:
                 json.dump(self.data, f, indent=4)
+                self.dbug("...data backed up.")
         else:
+            self.dbug(f"...directory for storing backups does not exist.")
             msg = f"""Mappa der du vil lagre sikkerheitskopiane eksisterer ikkje. Vil du opprette ho? \n({
-            self.current_settings["backup_file_path"]})"""
+            self.d_backups})"""
             if messagebox.askyesno(self.name, msg):
-                os.makedirs(self.current_settings["backup_file_path"])
+                os.makedirs(self.d_backups)
+                self.dbug(f"...backup dir created: {self.d_backups}")
                 with open(filename, "w") as f:
                     json.dump(self.data, f, indent=4)
+                    self.dbug("...data backed up")
 
 
 class MainWindow(tk.Frame):
     def __init__(self, parent):
         tk.Frame.__init__(self)
         self.parent = parent
+        self.parent.dbug("OPENING MAIN WINDOW", h=True)
         self.grid(row=0, column=0, sticky=tk.NSEW)
         self.rowconfigure(0, weight=1)
         self.columnconfigure(0, weight=1)
@@ -245,7 +280,7 @@ class MainWindow(tk.Frame):
 
     def refresh_data(self):
         self.parent.data = self.parent.load_data()
-        image = ImageTk.PhotoImage(Image.open(os.path.join(self.parent.rootdir, "frontpage_gassy_small_green.jpg")))
+        image = ImageTk.PhotoImage(Image.open(os.path.join(self.parent.rootdir, "Bilete", "frontpage_gassy_small_green.jpg")))
         label = tk.Label(self.frame_left, image=image)
         label.image = image
         label.grid(row=0, column=0, sticky=tk.E)
@@ -256,6 +291,7 @@ class Feedback(tk.Frame):
     def __init__(self, parent):
         tk.Frame.__init__(self)
         self.parent = parent
+        self.parent.dbug("OPENING FEEDBACK", h=True)
         self.grid(row=0, column=0, sticky=tk.NSEW)
 
         self.mail = "gassy.feedback@gmail.com"
@@ -319,6 +355,7 @@ class Settings(tk.Frame):
     def __init__(self, parent):
         tk.Frame.__init__(self)
         self.parent = parent
+        self.parent.dbug("OPENING SETTINGS", h=True)
 
         self.grid(row=0, column=0, sticky=tk.NSEW)
 
@@ -328,45 +365,57 @@ class Settings(tk.Frame):
         # Labels
         tk.Label(self.frame, text="Innstillingar", font=self.parent.font_heading,
                  bg="orange").grid(row=0, column=0, sticky=tk.W)
-        tk.Label(self.frame, text="Mappe for sikkerheitskopiar:", font=self.parent.font_main).grid(row=1, column=0,
-                                                                                                   sticky=tk.E)
-        tk.Label(self.frame, text="Automatisk sikkerheitskopi \nnår du avsluttar Gassy?",
-                 font=self.parent.font_main).grid(row=2, column=0)
+
+        tk.Label(self.frame, text=f"Prosjektmappe for {self.parent.name}:",
+                 font=self.parent.font_main).grid(row=1, column=0, sticky=tk.W)
+        tk.Label(self.frame, text=self.parent.d_project,
+                 font=self.parent.font_main).grid(row=1, column=1, sticky=tk.W)
+
+        tk.Label(self.frame, text="Datafil:", font=self.parent.font_main).grid(row=2, column=0, sticky=tk.W)
+        tk.Label(self.frame, text=self.parent.f_data,
+                 font=self.parent.font_main).grid(row=2, column=1, sticky=tk.W)
+
+        tk.Label(self.frame, text="Innstillingsfil:", font=self.parent.font_main).grid(row=3, column=0, sticky=tk.W)
+        tk.Label(self.frame, text=self.parent.f_settings,
+                 font=self.parent.font_main).grid(row=3, column=1, sticky=tk.W)
+
+        tk.Label(self.frame,
+                 text="Mappe for sikkerheitskopiar:",
+                 font=self.parent.font_main).grid(row=4, column=0, sticky=tk.W)
+        tk.Label(self.frame,
+                 text=self.parent.d_backups,
+                 font=self.parent.font_main).grid(row=4, column=1, sticky=tk.W)
 
         # Check buttons
-        tk.Checkbutton(self.frame, text="",
-                       variable=self.parent.automatic_backup,
-                       onvalue=True,
-                       offvalue=False).grid(row=2, column=1, sticky=tk.W)
-
-        # Entries
-        self.entry_backup = tk.Entry(self.frame, font=self.parent.font_main, width=30)
-        self.entry_backup.grid(row=1, column=1, sticky=tk.W)
-        self.entry_backup.insert(0, self.parent.current_settings["backup_file_path"])
+        tk.Checkbutton(self.frame, text=f"Automatisk sikkerheitskopi når du avsluttar {self.parent.name}?",
+                       variable=self.parent.automatic_backup).grid(row=5, column=0, sticky=tk.W)
 
         # Buttons
-        tk.Button(self.frame, text="Ta sikkerheitskopi", command=self.parent.make_backup,
-                  font=self.parent.font_main).grid(row=1, column=2, sticky=tk.W)
-        tk.Button(self.frame, text="Lagre innstillingar", command=self.get_new_settings,
-                  font=self.parent.font_main).grid(row=3, column=0, sticky=tk.W)
-        tk.Button(self.frame, text="Attende", command=lambda: self.parent.show_main(self),
-                  font=self.parent.font_main).grid(row=4, column=0, sticky=tk.W)
+        tk.Button(self.frame, text="Ta sikkerheitskopi",
+                  command=self.parent.backup,
+                  font=self.parent.font_main).grid(row=6, column=0, sticky=tk.W)
+        tk.Button(self.frame, text="Lagre innstillingar",
+                  command=self.get_new_settings,
+                  font=self.parent.font_main).grid(row=7, column=0, sticky=tk.W)
+        tk.Button(self.frame, text="Attende",
+                  command=lambda: self.parent.show_main(self),
+                  font=self.parent.font_main).grid(row=8, column=0, sticky=tk.W)
 
     def get_new_settings(self):
-        self.parent.current_settings["backup_file_path"] = self.entry_backup.get()
         self.parent.current_settings["automatic_backup"] = self.parent.automatic_backup.get()
 
-        self.parent.set_user_variables()
-
+        self.parent.set_system_variables()
         self.parent.dump_settings()
 
-        tk.messagebox.showinfo(self.parent.name, f"Innstillingar lagra i {self.parent.settingsfile.get()}")
+        tk.messagebox.showinfo(self.parent.name, f"Innstillingar lagra i {self.parent.f_settings}")
 
 
 class EditFills(tk.Frame):
     def __init__(self, parent):
         tk.Frame.__init__(self)
         self.parent = parent
+        self.parent.dbug("OPENING EDIT FILLS", h=True)
+
         self.selected = tk.StringVar()
 
         self.grid(row=0, column=0, sticky=tk.NSEW)
@@ -567,9 +616,10 @@ class EditFills(tk.Frame):
             if entry["date"] != self.selected.get():
                 other_data.append(entry)
 
-        with open(self.parent.datafile.get(), "w") as f:
+        with open(self.parent.f_data, "w") as f:
             other_data.append(updated_data)
             json.dump(other_data, f, indent=4)
+            self.parent.dbug(f"Fill from {self.selected.get()} updated.")
 
         self.parent.data = self.parent.load_data()
         tk.messagebox.showinfo("Gassy", "Fyllingsdata oppdatert!")
@@ -675,6 +725,7 @@ class AddNew(tk.Frame):
     def __init__(self, parent):
         tk.Frame.__init__(self)
         self.parent = parent
+        self.parent.dbug("OPENING ADD NEW FILL", h=True)
 
         self.grid(row=0, column=0, sticky=tk.NSEW)
 
@@ -748,10 +799,11 @@ class AddNew(tk.Frame):
         data["date"] = self.entry_date.get()
         data["comment"] = self.entry_comment.get()
 
-        with open(self.parent.datafile.get(), "w") as f:
+        with open(self.parent.f_data, "w") as f:
             self.parent.data.append(data)
             json.dump(self.parent.data, f, indent=4)
 
+        self.parent.dbug("New fill added to datafile.")
         tk.messagebox.showinfo(self.parent.name, "Ny fylling lagt til!")
 
     def sanity_check(self):
@@ -863,8 +915,9 @@ class InfoBox(tk.Toplevel):
         tk.Toplevel.__init__(self)
         self.msg = msg
         self.image = image
+        app.dbug("OPENING INFO BOX", h=True)
 
-        self.title = "Gassy"
+        self.title = app.name
 
         frame_left = tk.Frame(self)
         frame_right = tk.Frame(self)
@@ -895,6 +948,7 @@ class Graphing(tk.Frame):
         """
         tk.Frame.__init__(self)
         self.parent = parent
+        self.parent.dbug("OPENING ANALYSES", h=True)
 
         self.grid(row=0, column=0)
 
@@ -1305,6 +1359,7 @@ class FilterDateToolBar(tk.Frame):
         tk.Frame.__init__(self)
 
         self.parent = parent
+        self.parent.dbug("OPENING DATA FILTER", h=True)
         self.row = row
         self.column = column
 
@@ -1429,6 +1484,13 @@ def edit_help(index, rootdir):
         return InfoBox(msg, image)
 
 
+def current_time():
+    return str(datetime.datetime.now().time()).split(".")[0]
+
+def current_date():
+    return f"{datetime.datetime.now().year}{datetime.datetime.now().month}{datetime.datetime.now().day}"
+
+
 if __name__ == "__main__":
     app = Gassy()
     app.resizable(False, False)
@@ -1436,4 +1498,8 @@ if __name__ == "__main__":
     app.mainloop()
 
     if app.automatic_backup.get():
-        app.make_backup()
+        app.backup()
+    else:
+        app.dbug("DID NOT BACK UP DATA", h=True)
+    app.dbug("CLOSING GASSY", h=True)
+    app.dbug(None, h=True)
