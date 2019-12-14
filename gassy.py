@@ -15,6 +15,7 @@ from copy import deepcopy
 import smtplib
 
 DEV = False
+verbose = True
 
 
 class Gassy(tk.Tk):
@@ -182,9 +183,9 @@ class Gassy(tk.Tk):
                 tk.messagebox.showerror(self.name, "Ukjend feil, venlegst rapporter i detalj korleis denne meldinga oppstod.")
 
     def dbug(self, s, h=False):
-        if h and DEV:
+        if h and verbose:
             print(f"[{current_time()}] ---------------------------------------")
-        if s is not None and DEV:
+        if s is not None and verbose:
             print(f"[{current_time()}] {s}")
 
     def backup(self):
