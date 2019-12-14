@@ -250,5 +250,14 @@
         "bonus": "Coop",
         "station": "Circle K",
         "comment": ""
+    },
+    {
+        "bonus": "False",
+        "station": "Circle K",
+        "volume": 39.99,
+        "price": 16.29,
+        "time": "17:20",
+        "date": "2019-12-08",
+        "comment": "Kj\u00f8pte to av Circle-K sin Koppen"
     }
 ]
