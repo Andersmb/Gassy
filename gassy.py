@@ -33,6 +33,7 @@ class Gassy(tk.Tk):
         self.d_backups = os.path.join(self.d_project, "Sikkerheitskopiar")
         self.f_settings = os.path.join(self.d_project, "Innstillingar.json")
         self.f_data = os.path.join(self.d_project, "Fyllingsdata.json")
+        self.f_cars = os.path.join(self.d_project, "Mine_bilar.json")
 
         # Initialize variables
         self.bonus = tk.StringVar()
@@ -62,6 +63,9 @@ class Gassy(tk.Tk):
 
         # Load data
         self.data = self.load_data()
+
+        # Load cars
+        self.cars = self.load_cars()
 
         # Initialize the main window
         self.mainwindow = MainWindow(self)
@@ -100,6 +104,11 @@ class Gassy(tk.Tk):
         self.settings = Settings(self)
         self.mainwindow.grid_forget()
         self.settings.grid(row=0, column=0)
+
+    def show_addcar(self):
+        self.addcar = AddCar(self)
+        self.mainwindow.grid_forget()
+        self.addcar.grid(row=0, column=0)
 
     def load_data(self):
         """
@@ -158,6 +167,26 @@ class Gassy(tk.Tk):
         except json.decoder.JSONDecodeError:
             self.dbug("...error de-serializing JSON. Using defaults")
             return deepcopy(self.defaults)
+
+    def load_cars(self):
+        """
+        Look for file containing user's cars, and read the contents.
+        :return:
+        """
+        self.dbug("LOADING CARS", h=True)
+        try:
+            self.dbug("Looking for cars file...")
+            with open(self.f_cars) as f:
+                cars = json.load(f)
+                self.dbug("...file found.")
+                return cars
+        except FileNotFoundError:
+            self.dbug("...file not found. Making new one.")
+            open(self.f_cars, "w").close()
+            return []
+        except json.decoder.JSONDecodeError:
+            self.dbug("...empty file found.")
+            return []
 
     def set_system_variables(self):
         """
@@ -234,17 +263,17 @@ class MainWindow(tk.Frame):
                  font=self.parent.font_heading).grid(row=0, column=0, sticky=tk.EW, padx=20, pady=10)
 
         tk.Button(frame_right,
-                  text="Ny fylling...",
+                  text="Legg til ny fylling",
                   command=self.parent.show_addnew,
                   font=self.parent.font_main).grid(row=1, column=0, sticky=tk.EW, padx=20, pady=5)
 
         tk.Button(frame_right,
-                  text="Rediger fyllingar...",
+                  text="Mine fyllingar",
                   command=self.parent.show_editfills,
                   font=self.parent.font_main).grid(row=2, column=0, sticky=tk.EW, padx=20, pady=5)
 
         tk.Button(frame_right,
-                  text="Analysar...",
+                  text="Analysér fyllingsdata",
                   command=self.parent.show_graphing,
                   font=self.parent.font_main).grid(row=3, column=0, sticky=tk.EW, padx=20, pady=5)
 
@@ -254,7 +283,7 @@ class MainWindow(tk.Frame):
                   font=self.parent.font_main).grid(row=4, column=0, sticky=tk.EW, padx=20, pady=5)
 
         tk.Button(frame_right,
-                  text="Innstillingar",
+                  text="Mine innstillingar",
                   command=self.parent.show_settings,
                   font=self.parent.font_main).grid(row=5, column=0, sticky=tk.EW, padx=20, pady=5)
 
@@ -264,12 +293,17 @@ class MainWindow(tk.Frame):
                   font=self.parent.font_main).grid(row=6, column=0, sticky=tk.EW, padx=20, pady=5)
 
         tk.Button(frame_right,
+                  text="Legg til ny bil",
+                  command=self.parent.show_addcar,
+                  font=self.parent.font_main).grid(row=7, column=0, sticky=tk.EW, padx=20, pady=5)
+
+        tk.Button(frame_right,
                   text="Avslutt",
                   command=self.parent.destroy,
-                  fg="red", font=self.parent.font_main).grid(row=7, column=0, sticky=tk.EW, padx=20, pady=5)
+                  fg="red", font=self.parent.font_main).grid(row=8, column=0, sticky=tk.EW, padx=20, pady=5)
 
         if len(self.parent.data) == 0:
-            tk.Label(self.frame_left, text="Datafila di er tom :(",
+            tk.Label(self.frame_left, text="Datafila di er tom",
                      font=self.parent.font_main, fg="red").grid(row=1, column=0)
         else:
             if len(self.parent.data) > 1:
@@ -278,6 +312,10 @@ class MainWindow(tk.Frame):
             else:
                 tk.Label(self.frame_left, text=f"Datafila di har {len(self.parent.data)} fylling :)",
                          font=self.parent.font_main, fg="green").grid(row=1, column=0)
+
+        if len(self.parent.cars) == 0:
+            tk.Label(self.frame_left, text="Ingen bilar er registrert",
+                     font=self.parent.font_main, fg="red").grid(row=2, column=0)
 
     def refresh_data(self):
         self.parent.data = self.parent.load_data()
@@ -490,6 +528,9 @@ class EditFills(tk.Frame):
         self.entry_comment.grid(row=5, column=1, sticky=tk.W, pady=5, padx=5)
         option_bonus.grid(row=6, column=1, sticky=tk.W, pady=5, padx=5)
         option_station.grid(row=7, column=1, sticky=tk.W, pady=5, padx=5)
+
+        # Put focus on volume entry
+        self.entry_volume.focus_set()
 
         for row in range(7):
             tk.Button(self.frame_right, text="Hjelp",
@@ -767,6 +808,9 @@ class AddNew(tk.Frame):
         self.entry_comment.grid(row=5, column=1, sticky=tk.W)
         option_bonus.grid(row=6, column=1, sticky=tk.W)
         option_station.grid(row=7, column=1, sticky=tk.W)
+
+        # Put focus on volume entry
+        self.entry_volume.focus_set()
 
         for row in range(7):
             tk.Button(self, text="Hjelp", command=lambda index=row: edit_help(index + 1, self.parent.rootdir),
@@ -1369,6 +1413,65 @@ class FilterDateToolBar(tk.Frame):
         tk.Label(self, text="År: ").grid(row=0, column=0)
         tk.Label(self, text="Månad: ").grid(row=0, column=1)
         tk.Label(self, text="Dag: ").grid(row=0, column=2)
+
+
+class AddCar(tk.Frame):
+    def __init__(self, parent):
+        tk.Frame.__init__(self)
+        self.parent = parent
+        self.parent.dbug("OPENING ADD NEW CAR", h=True)
+
+        tk.Label(self,
+                 text="Legg til ny bil",
+                 font=self.parent.font_heading,
+                 bg="orange").grid(row=0, column=0, sticky=tk.W, padx=20, pady=5)
+
+        tk.Label(self, text="Merke:", font=self.parent.font_main).grid(row=1, column=0, sticky=tk.W, padx=20, pady=5)
+        tk.Label(self, text="Modell:",
+                 font=self.parent.font_main).grid(row=2, column=0, sticky=tk.W, padx=20, pady=5)
+        tk.Label(self, text="Årsmodell (åååå):",
+                 font=self.parent.font_main).grid(row=3, column=0, sticky=tk.W, padx=20, pady=5)
+        tk.Label(self, text="Kallenamn:",
+                 font=self.parent.font_main).grid(row=4, column=0, sticky=tk.W, padx=20, pady=5)
+
+        self.entry_make = tk.Entry(self, width=30, font=self.parent.font_main)
+        self.entry_make.grid(row=1, column=1, sticky=tk.W, padx=20, pady=5)
+        self.entry_make.focus_set()
+
+        self.entry_model = tk.Entry(self, width=30, font=self.parent.font_main)
+        self.entry_model.grid(row=2, column=1, sticky=tk.W, padx=20, pady=5)
+
+        self.entry_year = tk.Entry(self, width=30, font=self.parent.font_main)
+        self.entry_year.grid(row=3, column=1, sticky=tk.W, padx=20, pady=5)
+
+        self.entry_nickname = tk.Entry(self, width=30, font=self.parent.font_main)
+        self.entry_nickname.grid(row=4, column=1, sticky=tk.W, padx=20, pady=5)
+
+        tk.Button(self,
+                  text="Legg til",
+                  command=self.add_car,
+                  font=self.parent.font_main).grid(row=5, column=0, sticky=tk.W, padx=20, pady=5)
+        tk.Button(self,
+                  text="Attende",
+                  command=lambda: self.parent.show_main(self)).grid(row=6, column=0, sticky=tk.W, padx=20, pady=5)
+
+    def add_car(self):
+        self.parent.dbug("ADDING NEW CAR", h=True)
+
+        # Get the data
+        new_car = {}
+        new_car["merke"] = self.entry_make.get()
+        new_car["modell"] = self.entry_model.get()
+        new_car["årsmodell"] = self.entry_year.get()
+        new_car["kallenamn"] = self.entry_nickname.get()
+
+        with open(self.parent.f_cars, "w") as f:
+            self.parent.cars.append(new_car)
+            json.dump(self.parent.cars, f, indent=4)
+            self.parent.dbug("New car added:")
+            for key, item in new_car.items():
+                self.parent.dbug(f"{key}: {item}")
+
 
 
 def datefromstring(str):
