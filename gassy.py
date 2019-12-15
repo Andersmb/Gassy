@@ -14,7 +14,7 @@ import datetime
 from copy import deepcopy
 import smtplib
 
-DEV = False
+DEV = True
 verbose = True
 
 
