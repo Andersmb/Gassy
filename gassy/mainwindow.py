@@ -37,20 +37,20 @@ class MainWindow(tk.Frame):
                   command=self.parent.show_editfills).grid(row=2, column=0, sticky=tk.EW, padx=20, pady=5)
 
         MyButton(frame_right,
+                  text="Mine bilar",
+                  command=self.parent.show_mycars).grid(row=3, column=0, sticky=tk.EW, padx=20, pady=5)
+
+        MyButton(frame_right,
                   text="Mine analysar",
-                  command=self.parent.show_analysis).grid(row=3, column=0, sticky=tk.EW, padx=20, pady=5)
+                  command=self.parent.show_analysis).grid(row=4, column=0, sticky=tk.EW, padx=20, pady=5)
 
         MyButton(frame_right,
                   text="Mine innstillingar",
-                  command=self.parent.show_settings).grid(row=4, column=0, sticky=tk.EW, padx=20, pady=5)
+                  command=self.parent.show_settings).grid(row=5, column=0, sticky=tk.EW, padx=20, pady=5)
 
         MyButton(frame_right,
                   text="Ris og ros",
-                  command=self.parent.show_feedback).grid(row=5, column=0, sticky=tk.EW, padx=20, pady=5)
-
-        MyButton(frame_right,
-                  text="Mine bilar",
-                  command=self.parent.show_mycars).grid(row=6, column=0, sticky=tk.EW, padx=20, pady=5)
+                  command=self.parent.show_feedback).grid(row=6, column=0, sticky=tk.EW, padx=20, pady=5)
 
         MyButton(frame_right,
                   text="Avslutt",
