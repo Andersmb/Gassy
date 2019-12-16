@@ -24,6 +24,8 @@ class Analysis(tk.Frame):
         self.parent.dbug("OPENING ANALYSES", h=True)
         self.padx = 5
         self.pady = 5
+        self.limit_data = tk.BooleanVar()
+        self.limit_data.set(False)
 
         self.grid(row=0, column=0)
 
@@ -31,6 +33,9 @@ class Analysis(tk.Frame):
         frame_right = tk.Frame(self)
         frame_left.grid(row=0, column=0)
         frame_right.grid(row=0, column=1)
+
+        cars = [car["kallenamn"] for car in self.parent.cars]
+        self.parent.selected_car.set(cars[0])
 
         image = ImageTk.PhotoImage(Image.open(os.path.join(self.parent.rootdir, "Bilete", "graphing.jpg")))
         label_image = MyLabel(frame_left, image=image)
@@ -41,17 +46,28 @@ class Analysis(tk.Frame):
 
         MyButton(frame_right, text="Attende",
                   command=lambda: self.parent.show_main(self)).grid(row=1, column=0, padx=self.padx, pady=self.pady, sticky=tk.W)
+        MyOptionMenu(frame_right,
+                     self.parent.selected_car, *cars).grid(row=2, column=0, padx=self.padx, pady=self.pady, sticky=tk.W)
+        MyCheckbutton(frame_right,
+                      text="Begrens data til valgt bil",
+                      variable=self.limit_data).grid(row=3, column=0, padx=self.padx, pady=self.pady, sticky=tk.W)
+
+
         MyButton(frame_right, text="Korleis har literprisen variert?",
-                  command=self.plot_price).grid(row=2, column=0, padx=self.padx, pady=self.pady, sticky=tk.W)
+                  command=self.plot_price).grid(row=4, column=0, padx=self.padx, pady=self.pady, sticky=tk.W)
         MyButton(frame_right, text="Kvar har eg fylt drivstoff oftast?",
-                  command=self.plot_station_frequency).grid(row=3, column=0, padx=self.padx, pady=self.pady, sticky=tk.W)
+                  command=self.plot_station_frequency).grid(row=5, column=0, padx=self.padx, pady=self.pady, sticky=tk.W)
         MyButton(frame_right, text="På kva dag fyller eg oftast?",
-                  command=self.plot_day_frequency).grid(row=4, column=0, padx=self.padx, pady=self.pady, sticky=tk.W)
+                  command=self.plot_day_frequency).grid(row=6, column=0, padx=self.padx, pady=self.pady, sticky=tk.W)
         MyButton(frame_right, text="Samandrag",
-                  command=self.fill_report).grid(row=5, column=0, padx=self.padx, pady=self.pady, sticky=tk.W)
+                  command=self.fill_report).grid(row=7, column=0, padx=self.padx, pady=self.pady, sticky=tk.W)
 
         MyButton(frame_right, text="Literpris for ulike dagar",
-                  command=self.plot_day_price_variation).grid(row=6, column=0, padx=self.padx, pady=self.pady, sticky=tk.W)
+                  command=self.plot_day_price_variation).grid(row=8, column=0, padx=self.padx, pady=self.pady, sticky=tk.W)
+
+        MyButton(frame_right,
+                 text="Eksporter data til CSV",
+                 command=self.parent.not_implemented).grid(row=9, column=0, padx=self.padx, pady=self.pady, sticky=tk.W)
 
     def plot_price(self):
         """
@@ -108,7 +124,10 @@ class Analysis(tk.Frame):
         canvas.get_tk_widget().grid(row=2, column=0)
         fig.canvas.mpl_connect("motion_notify_event", hover)
 
-        data = self.parent.data
+        if self.limit_data:
+            data = [entry for entry in self.parent.data if entry["car"] == self.parent.selected_car.get()]
+        else:
+            data = self.parent.data
 
         x = [entry["date"] for entry in data]
         y = [entry["price"] for entry in data]
@@ -136,7 +155,10 @@ class Analysis(tk.Frame):
         Make a pie chart showing the frequency of fills for each station.
         :return: None
         """
-        data = self.parent.data
+        if self.limit_data:
+            data = [entry for entry in self.parent.data if entry["car"] == self.parent.selected_car.get()]
+        else:
+            data = self.parent.data
 
         counts = {station: 0 for station in set([entry["station"] for entry in data])}
         for entry in data:
@@ -189,7 +211,10 @@ class Analysis(tk.Frame):
                    "Lør": "Sat",
                    "Sun": "Sun"}
 
-        data = self.parent.data
+        if self.limit_data:
+            data = [entry for entry in self.parent.data if entry["car"] == self.parent.selected_car.get()]
+        else:
+            data = self.parent.data
 
         days = [eng2nor[datefromstring(entry["date"]).strftime("%a")] for entry in data]
         counts = {day: 0 for day in reversed(list(nor2eng.keys())) if day in set(days)}
@@ -244,7 +269,10 @@ class Analysis(tk.Frame):
                    "Lør": "Sat",
                    "Sun": "Sun"}
 
-        data = self.parent.data
+        if self.limit_data:
+            data = [entry for entry in self.parent.data if entry["car"] == self.parent.selected_car.get()]
+        else:
+            data = self.parent.data
 
         days = [eng2nor[datefromstring(entry["date"]).strftime("%a")] for entry in data]
 
@@ -311,7 +339,10 @@ class Analysis(tk.Frame):
         Collect some summaries and statistics, and display for the user.
         :return: None
         """
-        data = self.parent.data
+        if self.limit_data:
+            data = [entry for entry in self.parent.data if entry["car"] == self.parent.selected_car.get()]
+        else:
+            data = self.parent.data
 
         container = tk.Toplevel(self)
         container.resizable(False, False)
