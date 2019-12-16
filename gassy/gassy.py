@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import messagebox
 import json
 from copy import deepcopy
+import os
 
 from mywidgets import *
 from helpers import *
@@ -28,7 +29,7 @@ class Gassy(tk.Tk):
         self.title(self.name)
 
         # Set working directory and key dirs and files
-        self.rootdir = os.path.dirname(os.path.abspath(__file__))
+        self.rootdir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         self.d_project = os.path.join(os.path.expanduser("~"), self.name)
         self.d_backups = os.path.join(self.d_project, "Sikkerheitskopiar")
         self.f_settings = os.path.join(self.d_project, "Innstillingar.json")
