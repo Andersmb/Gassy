@@ -1,6 +1,8 @@
-from mywidgets import *
+import tkinter as tk
 from PIL import Image, ImageTk
 import os
+
+from mywidgets import *
 
 
 class MainWindow(tk.Frame):
@@ -17,7 +19,7 @@ class MainWindow(tk.Frame):
         self.frame_left.grid(row=0, column=0)
         frame_right.grid(row=0, column=1)
 
-        image = ImageTk.PhotoImage(Image.open(os.path.join(self.parent.rootdir, "Bilete", "frontpage_gassy_small.jpg")))
+        image = ImageTk.PhotoImage(Image.open(os.path.join(self.parent.rootdir, "bilete", "frontpage_gassy_small.jpg")))
         label = tk.Label(self.frame_left, image=image)
         label.image = image
         label.grid(row=0, column=0, sticky=tk.E)
