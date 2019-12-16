@@ -251,6 +251,9 @@ class Gassy(tk.Tk):
         self.data = self.load_data()
         self.dbug("...data reloaded")
 
+    def not_implemented(self):
+        return messagebox.showerror(self.name, "Dette er ikkje implementert endå :(")
+
 
 if __name__ == "__main__":
     app = Gassy()
