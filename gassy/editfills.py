@@ -53,42 +53,45 @@ class EditFills(tk.Frame):
         self.entry_date = MyEntry(self.frame_right, width=20)
         self.entry_time = MyEntry(self.frame_right, width=20)
         self.entry_comment = MyEntry(self.frame_right, width=20)
-        MyOptionMenu(self.frame_right, self.parent.bonus, *self.parent.bonuses).grid(row=6, column=1, sticky=tk.W)
-        MyOptionMenu(self.frame_right, self.parent.station, *self.parent.stations).grid(row=7, column=1, sticky=tk.W)
+        MyOptionMenu(self.frame_right, self.parent.bonus, *self.parent.bonuses).grid(row=7, column=1, sticky=tk.W)
+        MyOptionMenu(self.frame_right, self.parent.station, *self.parent.stations).grid(row=8, column=1, sticky=tk.W)
+        MyOptionMenu(self.frame_right, self.parent.selected_car,
+                     *[car["kallenamn"] for car in self.parent.cars]).grid(row=1, column=1, sticky=tk.W, pady=5, padx=5)
         self.label_volume = MyLabel(self.frame_right, text="Volum (L): ")
         self.label_price = MyLabel(self.frame_right, text="Literpris (Kr/L): ")
         self.label_date = MyLabel(self.frame_right, text="Dato (åååå-mm-dd): ")
         self.label_time = MyLabel(self.frame_right, text="Klokkeslett (tt:mm): ")
         self.label_comment = MyLabel(self.frame_right, text="Kommentar: ")
 
-        MyLabel(self.frame_right, text="Bonusprogram: ").grid(row=6, column=0, sticky=tk.W, pady=5, padx=5)
-        MyLabel(self.frame_right, text="Stasjon: ").grid(row=7, column=0, sticky=tk.W, pady=5, padx=5)
+        MyLabel(self.frame_right, text="Bil: ").grid(row=1, column=0, sticky=tk.W, pady=5, padx=5)
+        MyLabel(self.frame_right, text="Bonusprogram: ").grid(row=7, column=0, sticky=tk.W, pady=5, padx=5)
+        MyLabel(self.frame_right, text="Stasjon: ").grid(row=8, column=0, sticky=tk.W, pady=5, padx=5)
 
-        self.label_volume.grid(row=1, column=0, sticky=tk.W, pady=5, padx=5)
-        self.label_price.grid(row=2, column=0, sticky=tk.W, pady=5, padx=5)
-        self.label_date.grid(row=3, column=0, sticky=tk.W, pady=5, padx=5)
-        self.label_time.grid(row=4, column=0, sticky=tk.W, pady=5, padx=5)
-        self.label_comment.grid(row=5, column=0, sticky=tk.W, pady=5, padx=5)
-        self.entry_volume.grid(row=1, column=1, sticky=tk.W, pady=5, padx=5)
-        self.entry_price.grid(row=2, column=1, sticky=tk.W, pady=5, padx=5)
-        self.entry_date.grid(row=3, column=1, sticky=tk.W, pady=5, padx=5)
-        self.entry_time.grid(row=4, column=1, sticky=tk.W, pady=5, padx=5)
-        self.entry_comment.grid(row=5, column=1, sticky=tk.W, pady=5, padx=5)
+        self.label_volume.grid(row=2, column=0, sticky=tk.W, pady=5, padx=5)
+        self.label_price.grid(row=3, column=0, sticky=tk.W, pady=5, padx=5)
+        self.label_date.grid(row=4, column=0, sticky=tk.W, pady=5, padx=5)
+        self.label_time.grid(row=5, column=0, sticky=tk.W, pady=5, padx=5)
+        self.label_comment.grid(row=6, column=0, sticky=tk.W, pady=5, padx=5)
+        self.entry_volume.grid(row=2, column=1, sticky=tk.W, pady=5, padx=5)
+        self.entry_price.grid(row=3, column=1, sticky=tk.W, pady=5, padx=5)
+        self.entry_date.grid(row=4, column=1, sticky=tk.W, pady=5, padx=5)
+        self.entry_time.grid(row=5, column=1, sticky=tk.W, pady=5, padx=5)
+        self.entry_comment.grid(row=6, column=1, sticky=tk.W, pady=5, padx=5)
 
         # Put focus on volume entry
         self.entry_volume.focus_set()
 
-        for row in range(7):
+        for row in range(1, 8):
             MyButton(self.frame_right,
                      text="Hjelp",
-                     command=lambda index=row: edit_help(self.parent, index + 1,
+                     command=lambda index=row: edit_help(self.parent, index,
                                                          self.parent.rootdir)).grid(row=row + 1, column=2, pady=5,
                                                                                     padx=5, sticky=tk.W)
 
-        MyButton(self.frame_right, text="Attende", command=self.close).grid(row=8, column=1, sticky=tk.W, pady=5, padx=5)
         MyButton(self.frame_right,
                  text="Oppdater fylling",
-                 command=self.update_fill_entry).grid(row=8, column=0, pady=5, padx=5, sticky=tk.W)
+                 command=self.update_fill_entry).grid(row=9, column=0, pady=5, padx=5, sticky=tk.W)
+        MyButton(self.frame_right, text="Attende", command=self.close).grid(row=10, column=0, sticky=tk.W, pady=5, padx=5)
 
         global fills
         fills = [fill["date"] for fill in self.parent.data]
@@ -159,6 +162,8 @@ class EditFills(tk.Frame):
 
         self.parent.bonus.set("Ingen bonus" if entry["bonus"] == "False" else entry["bonus"])
         self.parent.station.set(entry["station"])
+
+        self.parent.selected_car.set(entry["car"])
 
     @staticmethod
     def get_fill_from_date(data, query):

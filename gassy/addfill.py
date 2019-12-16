@@ -29,36 +29,40 @@ class AddFill(tk.Frame):
         label_station = MyLabel(self, text="Stasjon: ")
         self.label_comment = MyLabel(self, text="Kommentar")
 
-        self.label_volume.grid(row=1, column=0, sticky=tk.W, padx=padx, pady=pady)
-        self.label_price.grid(row=2, column=0, sticky=tk.W, padx=padx, pady=pady)
-        self.label_date.grid(row=3, column=0, sticky=tk.W, padx=padx, pady=pady)
-        self.label_time.grid(row=4, column=0, sticky=tk.W, padx=padx, pady=pady)
-        self.label_comment.grid(row=5, column=0, sticky=tk.W, padx=padx, pady=pady)
-        label_bonus.grid(row=6, column=0, sticky=tk.W, padx=padx, pady=pady)
-        label_station.grid(row=7, column=0, sticky=tk.W, padx=padx, pady=pady)
+        MyLabel(self, text="Bil: ").grid(row=1, column=0, sticky=tk.W, padx=padx, pady=pady)
+        self.label_volume.grid(row=2, column=0, sticky=tk.W, padx=padx, pady=pady)
+        self.label_price.grid(row=3, column=0, sticky=tk.W, padx=padx, pady=pady)
+        self.label_date.grid(row=4, column=0, sticky=tk.W, padx=padx, pady=pady)
+        self.label_time.grid(row=5, column=0, sticky=tk.W, padx=padx, pady=pady)
+        self.label_comment.grid(row=6, column=0, sticky=tk.W, padx=padx, pady=pady)
+        label_bonus.grid(row=7, column=0, sticky=tk.W, padx=padx, pady=pady)
+        label_station.grid(row=8, column=0, sticky=tk.W, padx=padx, pady=pady)
 
-        self.entry_volume.grid(row=1, column=1, sticky=tk.W, padx=padx, pady=pady)
-        self.entry_price.grid(row=2, column=1, sticky=tk.W, padx=padx, pady=pady)
-        self.entry_date.grid(row=3, column=1, sticky=tk.W, padx=padx, pady=pady)
-        self.entry_time.grid(row=4, column=1, sticky=tk.W, padx=padx, pady=pady)
-        self.entry_comment.grid(row=5, column=1, sticky=tk.W, padx=padx, pady=pady)
+        self.entry_volume.grid(row=2, column=1, sticky=tk.W, padx=padx, pady=pady)
+        self.entry_price.grid(row=3, column=1, sticky=tk.W, padx=padx, pady=pady)
+        self.entry_date.grid(row=4, column=1, sticky=tk.W, padx=padx, pady=pady)
+        self.entry_time.grid(row=5, column=1, sticky=tk.W, padx=padx, pady=pady)
+        self.entry_comment.grid(row=6, column=1, sticky=tk.W, padx=padx, pady=pady)
 
-        MyOptionMenu(self, self.parent.bonus, *self.parent.bonuses).grid(row=6, column=1, sticky=tk.W, padx=padx, pady=pady)
-        MyOptionMenu(self, self.parent.station, *self.parent.stations).grid(row=7, column=1, sticky=tk.W, padx=padx, pady=pady)
+        cars = [car["kallenamn"] for car in self.parent.cars]
+        self.parent.selected_car.set(cars[0])
+        MyOptionMenu(self, self.parent.selected_car, *cars).grid(row=1, column=1, sticky=tk.W, padx=padx, pady=pady)
+        MyOptionMenu(self, self.parent.bonus, *self.parent.bonuses).grid(row=7, column=1, sticky=tk.W, padx=padx, pady=pady)
+        MyOptionMenu(self, self.parent.station, *self.parent.stations).grid(row=8, column=1, sticky=tk.W, padx=padx, pady=pady)
 
         # Put focus on volume entry
         self.entry_volume.focus_set()
 
-        for row in range(7):
+        for row in range(1, 8):
             MyButton(self,
                      text="Hjelp",
-                     command=lambda index=row: edit_help(self.parent, index + 1, self.parent.rootdir)).grid(row=row + 1,
+                     command=lambda index=row: edit_help(self.parent, index, self.parent.rootdir)).grid(row=row + 1,
                                                                                                column=2,
                                                                                                padx=padx, pady=pady)
 
-        MyButton(self, text="Legg til fylling", command=self.append_new_fill).grid(row=8, column=0, sticky=tk.W, padx=padx,
+        MyButton(self, text="Legg til fylling", command=self.append_new_fill).grid(row=9, column=0, sticky=tk.W, padx=padx,
                                                                         pady=pady)
-        MyButton(self, text="Attende", command=lambda: self.parent.show_main(self)).grid(row=9, column=0, sticky=tk.W,
+        MyButton(self, text="Attende", command=lambda: self.parent.show_main(self)).grid(row=10, column=0, sticky=tk.W,
                                                                                          padx=padx, pady=pady)
 
         self.sanity_check()
@@ -76,6 +80,7 @@ class AddFill(tk.Frame):
             return
 
         data = {}
+        data["car"] = self.parent.selected_car.get()
         data["bonus"] = "False" if self.parent.bonus.get() == "Ingen bonus" else self.parent.bonus.get()
         data["station"] = self.parent.station.get()
         data["volume"] = float(self.entry_volume.get())
@@ -84,9 +89,8 @@ class AddFill(tk.Frame):
         data["date"] = self.entry_date.get()
         data["comment"] = self.entry_comment.get()
 
-        with open(self.parent.f_data, "w") as f:
-            self.parent.data.append(data)
-            json.dump(self.parent.data, f, indent=4)
+        self.parent.data.append(data)
+        self.parent.dump_data()
 
         self.parent.dbug("New fill added to datafile.")
         tk.messagebox.showinfo(self.parent.name, "Ny fylling lagt til!")

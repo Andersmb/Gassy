@@ -40,6 +40,7 @@ class Gassy(tk.Tk):
         self.bonus = tk.StringVar()
         self.station = tk.StringVar()
         self.automatic_backup = tk.BooleanVar()
+        self.selected_car = tk.StringVar()
 
         # Define the gas station options and bonus options
         self.stations = ["Circle K", "Shell", "Best", "Uno-X", "Esso", "OKQ8", "Ukjend"]
@@ -238,8 +239,17 @@ class Gassy(tk.Tk):
         self.dbug("DUMPING CARS", h=True)
         with open(self.f_cars, "w") as f:
             json.dump(self.cars, f, indent=4)
+        self.dbug("...dumped")
         self.cars = self.load_cars()
-        self.dbug("Cars reloaded")
+        self.dbug("...cars reloaded")
+
+    def dump_data(self):
+        self.dbug("DUMPING DATA", h=True)
+        with open(self.f_data, "w") as f:
+            json.dump(self.data, f, indent=4)
+        self.dbug("...dumped")
+        self.data = self.load_data()
+        self.dbug("...data reloaded")
 
 
 if __name__ == "__main__":

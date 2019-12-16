@@ -19,6 +19,7 @@ class MyCars(tk.Frame):
         self.place_widgets()
 
     def place_widgets(self):
+        ROW = 0
         self.frame_l = tk.Frame(self)
         self.frame_l.grid(row=0, column=0)
         self.frame_r = tk.Frame(self)
