@@ -57,7 +57,7 @@ class Feedback(tk.Frame):
         msg = f"""Subject: {self.subject.get().strip()}\n\n{self.body.get("1.0", tk.END)}"""
 
         if not self.body.get("1.0", tk.END).strip() == "":
-            server.sendmail(self.mail, self.mail, msg)
+            server.sendmail(self.mail, self.mail, msg.encode('utf-8'))
             messagebox.showinfo(self.parent.name, "Tusen takk for tilbakemeldinga! :)")
         else:
             tk.messagebox.showwarning(self.parent.name, "Du har ikkje skrive noko i tekstboksen.")
