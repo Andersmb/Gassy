@@ -15,7 +15,7 @@ from addfill import AddFill
 from analysis import Analysis
 
 
-DEV = False
+DEV = True
 verbose = True
 
 
